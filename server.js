@@ -4,11 +4,13 @@ const app = express();
 const { sequelize } = require("./models/index");
 const testRoutes = require("./routes/test");
 const getfileRoutes = require("./routes/getfile");
+const sendmailRoutes = require("./routes/sendmail");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/test", testRoutes);
 app.use("/", getfileRoutes);
+app.use("/", sendmailRoutes);
 
 // gestion des erreurs
 const errorHandler = require("./middleware/errorHandler");
