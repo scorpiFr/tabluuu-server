@@ -1,11 +1,13 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require('cors');
 const app = express();
 const { sequelize } = require("./models/index");
 const testRoutes = require("./routes/test");
 const getfileRoutes = require("./routes/getfile");
 const sendmailRoutes = require("./routes/sendmail");
 
+app.use(cors()); // Autorise toutes les origines des requetes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/test", testRoutes);
