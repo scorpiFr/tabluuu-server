@@ -13,8 +13,15 @@ const sequelize = new Sequelize(
 );
 
 const Test = require("./Test")(sequelize, Sequelize.DataTypes);
+const Etablissement = require("./Etablissement")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const Session = require("./Session")(sequelize, Sequelize.DataTypes);
 
 module.exports = {
   sequelize,
   Test,
+  Etablissement,
+  Session,
 };
