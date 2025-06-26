@@ -64,7 +64,7 @@ function generateQrCarte(barid, table) {
 }
 
 async function generateQrImage(proformaPath, barid, table) {
-  const qrText = `http://tabluuu.fr:3000/?barid=${barid}&table=${table}`;
+  const qrText = `https://www.tabluuu.fr/?barid=${barid}&table=${table}`;
   const qrSize = 500;
 
   // Charger le proforma
@@ -89,9 +89,10 @@ async function generateQrImage(proformaPath, barid, table) {
 router.get("/getqrcode", async (req, res) => {
   const barid = req.query.barid;
   const table = req.query.table;
+  const type = req.query.type ?? "bar";
 
-  if (!barid || !table) {
-    return res.status(400).send("Missing barid or table parameter");
+  if (!barid || !table || !type) {
+    return res.status(400).send("Missing barid, table or type parameter");
   }
 
   // Chemin du dossier et du fichier
@@ -113,9 +114,12 @@ router.get("/getqrcode", async (req, res) => {
       }
 
       // URL à encoder dans le QR code
-      const urlToEncode = `http://tabluuu.fr:3000/?barid=${barid}&table=${table}`;
-      //const canvas = await generateQrMenu(barid, table);
-      const canvas = await generateQrCarte(barid, table);
+      let canvas = "";
+      if (type === "bar") {
+        canvas = await generateQrCarte(barid, table);
+      } else {
+        canvas = await generateQrMenu(barid, table);
+      }
       const buffer = canvas.toBuffer("image/png");
 
       // Sauvegarde
@@ -128,6 +132,44 @@ router.get("/getqrcode", async (req, res) => {
       return res.status(500).send("Erreur serveur");
     }
   });
+});
+
+router.get("/getpage", async (req, res) => {
+  const barid = req.query.barid;
+  const table = "";
+  const type = req.query.type ?? "bar";
+  const url = `http://localhost:4000/getqrcode/?barid=${barid}&type=${type}`;
+  let html = `<style>img {max-width: 150px;}</style>
+  <center>Tabluuu ${barid}`;
+
+  // html
+  html += `<div nowrap>
+  <img src="${url}&table=table_1" />
+  <img src="${url}&table=table_2" />
+  <img src="${url}&table=table_3" />
+  <img src="${url}&table=table_4" />
+  </div>
+  <div nowrap>
+  <img src="${url}&table=table_5" />
+  <img src="${url}&table=table_6" />
+  <img src="${url}&table=table_7" />
+  <img src="${url}&table=table_8" />
+  </div>
+ <div nowrap>
+  <img src="${url}&table=table_9" />
+  <img src="${url}&table=table_10" />
+  <img src="${url}&table=table_11" />
+  <img src="${url}&table=table_12" />
+  </div>
+ <div nowrap>
+  <img src="${url}&table=table_13" />
+  <img src="${url}&table=table_14" />
+  <img src="${url}&table=table_15" />
+  <img src="${url}&table=table_16" />
+  </div>
+  </center>`;
+  // return
+  res.status(200).send(html);
 });
 
 module.exports = router;
