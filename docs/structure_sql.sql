@@ -1,0 +1,46 @@
+DROP TABLE etablissement;
+CREATE TABLE etablissement (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email_facturation VARCHAR(255) NOT NULL UNIQUE,
+	email_commandes VARCHAR(255) DEFAULT '',
+	nom_etablissement VARCHAR(255)  DEFAULT '',
+	type VARCHAR(255) DEFAULT 'bar',
+	nom VARCHAR(255) DEFAULT '',
+	prenom VARCHAR(255) DEFAULT '',
+	adresse VARCHAR(255) DEFAULT '',
+	tel VARCHAR(255) DEFAULT '',
+	password VARCHAR(255) NOT NULL,
+	secret_key VARCHAR(255) NOT NULL,
+	type_contrat VARCHAR(255) NOT NULL DEFAULT 'commande',
+	prix DECIMAL(5, 2) NOT NULL DEFAULT 0,
+	is_allocated CHAR(1) DEFAULT '0',
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE session;
+CREATE TABLE session (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	token VARCHAR(255) NOT NULL UNIQUE,
+	etablissement_id INT DEFAULT 0,
+	user_id INT DEFAULT 0,
+	nom_etablissement VARCHAR(255) DEFAULT '',
+	nom VARCHAR(255) DEFAULT '',
+	prenom VARCHAR(255) DEFAULT '',
+	role VARCHAR(255) DEFAULT 'etablissement',
+	max_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+/*
+INSERT INTO etablissement set 
+id=1, 
+email_facturation='contact.tabluuu@gmail.com',
+email_commandes='contact.tabluuu@gmail.com',
+nom_etablissement='HOUSEGANG BAR',
+type='bar',
+password='123',
+secret_key='123'
+;
+*/
