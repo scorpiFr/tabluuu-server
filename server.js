@@ -7,6 +7,7 @@ const testRoutes = require("./routes/test");
 const getfileRoutes = require("./routes/getfile");
 const sendmailRoutes = require("./routes/sendmail");
 const securityRoutes = require("./routes/security");
+const EtablissementRoutes = require("./routes/Etablissement");
 
 app.use(cors()); // Autorise toutes les origines des requetes
 app.use(express.json());
@@ -14,7 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/test", testRoutes);
 app.use("/", getfileRoutes);
 app.use("/", sendmailRoutes);
-app.use("/", securityRoutes);
+app.use("/admin/", securityRoutes);
+app.use("/admin/etablissement", EtablissementRoutes);
 
 // gestion des erreurs
 const errorHandler = require("./middleware/errorHandler");
