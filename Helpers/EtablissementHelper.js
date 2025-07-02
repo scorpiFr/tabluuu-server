@@ -16,4 +16,11 @@ function createSecretKey() {
   return res;
 }
 
-module.exports = { encryptPassword, createSecretKey };
+// remove secret informations of etablissement. like secretkey or password
+function removeSecretInformations(etablissement) {
+  etablissement.password = "";
+  etablissement.secret_key = "";
+  return etablissement;
+}
+
+module.exports = { encryptPassword, createSecretKey, removeSecretInformations };

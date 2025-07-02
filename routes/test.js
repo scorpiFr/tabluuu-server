@@ -28,7 +28,6 @@ router.get("/:id(\\d+)", async (req, res, next) => {
 // POST
 router.post("/", upload.none(), async (req, res, next) => {
   try {
-    console.log("Reçu via form-data :", req.body);
     const { nom, age, email } = req.body;
     const created = await Test.create({ nom, age, email });
 
