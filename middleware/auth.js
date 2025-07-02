@@ -1,5 +1,6 @@
 const { Session } = require("../models");
 
+// verify if your session token exists and is valid.
 module.exports = async (req, res, next) => {
   try {
     // get token
@@ -11,7 +12,7 @@ module.exports = async (req, res, next) => {
       return res;
     }
 
-    // get token from db :
+    // get token from db
     const sess = await Session.findOne({
       where: {
         token: token,

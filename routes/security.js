@@ -69,7 +69,7 @@ router.post("/login", upload.none(), async (req, res) => {
 router.get("/logout", upload.none(), async (req, res) => {
   // verify request
   const token = req.get("authorization");
-  if (!token) return res.status(400).json({ erreur: "authorization required" });
+  if (!token) return res.json({ msg: "ok" });
   // delete session
   try {
     await Session.destroy({
