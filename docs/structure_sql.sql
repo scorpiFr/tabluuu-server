@@ -57,3 +57,19 @@ CREATE TABLE dynamic_menu (
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_etablissementid ON dynamic_menu (etablissement_id);
+
+DROP TABLE section;
+DROP INDEX idx_etablissementid ON section;
+DROP INDEX idx_dynmenuid ON section;
+CREATE TABLE section (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	etablissement_id INT DEFAULT 0,
+	dynamic_menu_id INT DEFAULT 0,
+	nom VARCHAR(255) DEFAULT '',
+	position INT DEFAULT 0,
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_etablissementid ON section (etablissement_id);
+CREATE INDEX idx_dynmenuid ON section (dynamic_menu_id);
+
