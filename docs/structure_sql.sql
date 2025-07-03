@@ -44,3 +44,16 @@ password='123',
 secret_key='123'
 ;
 */
+
+DROP TABLE dynamic_menu;
+DROP INDEX idx_etablissementid ON dynamic_menu;
+CREATE TABLE dynamic_menu (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	etablissement_id INT DEFAULT 0,
+	nom VARCHAR(255) DEFAULT '',
+	is_active CHAR(1) DEFAULT '0',
+	position INT DEFAULT 0,
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_etablissementid ON dynamic_menu (etablissement_id);
