@@ -1,0 +1,326 @@
+const express = require("express");
+const router = express.Router();
+const { sequelize, Section, Item } = require("../models");
+const { Op } = require("sequelize");
+
+const multer = require("multer");
+const upload = multer(); // pas de stockage, en mémoire
+const auth = require("../middleware/auth.js");
+
+async function getMaxPosition(sectionId) {
+  try {
+    const [results, metadata] = await sequelize.query(
+      "SELECT MAX(position) AS maxposition FROM item WHERE section_id = :sectionid",
+      {
+        replacements: { sectionid: sectionId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    // results sera un tableau d'objets, ex : [{ position: 5 }]
+    return [results.maxposition, null];
+  } catch (error) {
+    console.error("Erreur dans getMaxPosition:", error);
+    return [0, error];
+  }
+}
+
+function isStrictDecimal(str) {
+  return /^(-?\d+(\.\d+)?|-?\.\d+)$/.test(str);
+}
+
+// LIST
+router.get(
+  "/listbysectionid/:sectionid(\\d+)",
+  auth,
+  async (req, res, next) => {
+    // get section
+    const section = await Section.findByPk(req.params.sectionid);
+    if (!section) return res.status(404).json({ erreur: "Non trouvé" });
+
+    // verify session
+    if (!req.Session) {
+      return res.status(401).json({ erreur: "Bad auth token" });
+    }
+    if (req.Session.role === "admin");
+    else if (
+      req.Session.role === "etablissement" &&
+      req.Session.etablissement_id == section.etablissement_id
+    );
+    else {
+      return res.status(403).json({ erreur: "Forbidden" });
+    }
+
+    // search
+    try {
+      const items = await Item.findAll({
+        where: { section_id: section.id },
+        order: [["position", "ASC"]],
+      });
+      res.status(200).json(items);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/*
+// GET one menu
+router.get("/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // return
+  res.status(200).json(menu);
+});
+
+// Update name
+router.patch("/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // verify inputs
+  const { nom } = req.body;
+  if (!nom) {
+    return res.status(400).json({ error: "Mandatory field : nom" });
+  }
+
+  try {
+    // update
+    menu.nom = nom;
+    await menu.save();
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update position up
+router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // search next menu
+    const nextMenu = await Dynamicmenu.findOne({
+      where: {
+        etablissement_id: menu.etablissement_id,
+        position: {
+          [Op.gt]: menu.position, // superior
+        },
+      },
+      order: [["position", "ASC"]], // plus proche valeur inférieure
+    });
+    // switch
+    if (nextMenu) {
+      const switchVar = menu.position;
+      menu.position = nextMenu.position;
+      nextMenu.position = switchVar;
+      await menu.save();
+      await nextMenu.save();
+    }
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update position down
+router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // search previous menu
+    const previousMenu = await Dynamicmenu.findOne({
+      where: {
+        etablissement_id: menu.etablissement_id,
+        position: {
+          [Op.lt]: menu.position, // inferior
+        },
+      },
+      order: [["position", "DESC"]], // plus proche valeur inférieure
+    });
+    // switch
+    if (previousMenu) {
+      const switchVar = menu.position;
+      menu.position = previousMenu.position;
+      previousMenu.position = switchVar;
+      await menu.save();
+      await previousMenu.save();
+    }
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+*/
+// CREATE
+router.post("/", auth, async (req, res, next) => {
+  // verify inputs
+  let { section_id, nom, prix, description } = req.body;
+  let inputErrors = [];
+  if (!section_id) {
+    inputErrors.push("section_id");
+  }
+  if (!nom) {
+    inputErrors.push("nom");
+  }
+  prix = prix.trim().replace(",", ".");
+  if (!prix || !isStrictDecimal(prix)) {
+    inputErrors.push("prix");
+  }
+  if (inputErrors.length > 0) {
+    return res
+      .status(400)
+      .json({ error: "Mandatory fields : " + inputErrors.join() });
+  }
+
+  // get section
+  const section = await Section.findByPk(section_id);
+  if (!section) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == section.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // count max position
+  const [maxPosition, error2] = await getMaxPosition(section_id);
+  if (error2) {
+    return res.status(500).json({ erreur: error2 });
+  }
+
+  // create
+  const position = maxPosition > 0 ? maxPosition + 10 : 10;
+  try {
+    const created = await Item.create({
+      etablissement_id: section.etablissement_id,
+      dynamic_menu_id: section.dynamic_menu_id,
+      section_id: section.id,
+      nom,
+      prix,
+      position,
+    });
+
+    res.status(201).json(created);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/*
+// DELETE
+router.delete("/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // if menu is active, activate another
+    if (menu.is_active == 1) {
+      const menu2 = await Dynamicmenu.findOne({
+        where: {
+          etablissement_id: menu.etablissement_id,
+          id: {
+            [Op.ne]: menu.id, // Exclut id du menu
+          },
+        },
+        order: [["id", "DESC"]],
+      });
+      if (menu2) {
+        menu2.is_active = 1;
+        await menu2.save();
+      }
+    }
+
+    // delete
+    await menu.destroy();
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+*/
+module.exports = router;

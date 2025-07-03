@@ -10,6 +10,7 @@ const securityRoutes = require("./routes/security");
 const EtablissementRoutes = require("./routes/Etablissement");
 const DynamicmenuRoutes = require("./routes/Dynamicmenu");
 const SectionRoutes = require("./routes/Section");
+const ItemRoutes = require("./routes/Item");
 
 app.use(cors()); // Autorise toutes les origines des requetes
 app.use(express.json());
@@ -21,6 +22,7 @@ app.use("/admin/", securityRoutes);
 app.use("/admin/etablissement", EtablissementRoutes);
 app.use("/admin/dynamicmenu", DynamicmenuRoutes);
 app.use("/admin/section", SectionRoutes);
+app.use("/admin/item", ItemRoutes);
 
 // gestion des erreurs
 const errorHandler = require("./middleware/errorHandler");

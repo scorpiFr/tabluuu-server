@@ -73,3 +73,22 @@ CREATE TABLE section (
 CREATE INDEX idx_etablissementid ON section (etablissement_id);
 CREATE INDEX idx_dynmenuid ON section (dynamic_menu_id);
 
+DROP TABLE item;
+DROP INDEX idx_etablissementid ON item;
+DROP INDEX idx_dynmenuid ON item;
+DROP INDEX idx_sectionid ON item;
+CREATE TABLE item (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	etablissement_id INT DEFAULT 0,
+	dynamic_menu_id INT DEFAULT 0,
+	section_id INT DEFAULT 0,
+	nom VARCHAR(255) DEFAULT '',
+	description VARCHAR(255) DEFAULT '',
+	prix DECIMAL(10, 2) DEFAULT 0,
+	position INT DEFAULT 0,
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_etablissementid ON item (etablissement_id);
+CREATE INDEX idx_dynmenuid ON item (dynamic_menu_id);
+CREATE INDEX idx_sectionid ON item (section_id);
