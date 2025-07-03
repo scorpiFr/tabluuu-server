@@ -18,10 +18,12 @@ const Etablissement = require("./Etablissement")(
   Sequelize.DataTypes
 );
 const Session = require("./Session")(sequelize, Sequelize.DataTypes);
+const Dynamicmenu = require("./Dynamicmenu")(sequelize, Sequelize.DataTypes);
 
 module.exports = {
   sequelize,
   Test,
   Etablissement,
   Session,
+  Dynamicmenu,
 };
