@@ -267,12 +267,11 @@ router.post("/", auth, async (req, res, next) => {
   }
 });
 
-/*
 // DELETE
 router.delete("/:id(\\d+)", auth, async (req, res, next) => {
-  // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+  // get section
+  const section = await Section.findByPk(req.params.id);
+  if (!section) return res.status(404).json({ erreur: "Non trouvé" });
 
   // verify session
   if (!req.Session) {
@@ -281,37 +280,20 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
   if (req.Session.role === "admin");
   else if (
     req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
+    req.Session.etablissement_id == section.etablissement_id
   );
   else {
     return res.status(403).json({ erreur: "Forbidden" });
   }
 
   try {
-    // if menu is active, activate another
-    if (menu.is_active == 1) {
-      const menu2 = await Dynamicmenu.findOne({
-        where: {
-          etablissement_id: menu.etablissement_id,
-          id: {
-            [Op.ne]: menu.id, // Exclut id du menu
-          },
-        },
-        order: [["id", "DESC"]],
-      });
-      if (menu2) {
-        menu2.is_active = 1;
-        await menu2.save();
-      }
-    }
-
     // delete
-    await menu.destroy();
+    await section.destroy();
     // return
     res.status(200).json({ msg: "ok" });
   } catch (err) {
     next(err);
   }
 });
-*/
+
 module.exports = router;
