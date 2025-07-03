@@ -66,7 +66,7 @@ router.get(
     try {
       const menus = await Dynamicmenu.findAll({
         where: { etablissement_id: req.params.etabid },
-        order: [["id", "DESC"]],
+        order: [["position", "DESC"]],
       });
       res.status(200).json(menus);
     } catch (err) {
