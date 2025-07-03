@@ -118,13 +118,12 @@ router.patch("/:id(\\d+)", auth, async (req, res, next) => {
     next(err);
   }
 });
-/*
 
 // Update position up
 router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
   // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+  const section = await Section.findByPk(req.params.id);
+  if (!section) return res.status(404).json({ erreur: "Non trouvé" });
 
   // verify session
   if (!req.Session) {
@@ -133,7 +132,7 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
   if (req.Session.role === "admin");
   else if (
     req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
+    req.Session.etablissement_id == section.etablissement_id
   );
   else {
     return res.status(403).json({ erreur: "Forbidden" });
@@ -141,22 +140,22 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // search next menu
-    const nextMenu = await Dynamicmenu.findOne({
+    const nextSection = await Section.findOne({
       where: {
-        etablissement_id: menu.etablissement_id,
+        dynamic_menu_id: section.dynamic_menu_id,
         position: {
-          [Op.gt]: menu.position, // superior
+          [Op.gt]: section.position, // superior
         },
       },
       order: [["position", "ASC"]], // plus proche valeur inférieure
     });
     // switch
-    if (nextMenu) {
-      const switchVar = menu.position;
-      menu.position = nextMenu.position;
-      nextMenu.position = switchVar;
-      await menu.save();
-      await nextMenu.save();
+    if (nextSection) {
+      const switchVar = section.position;
+      section.position = nextSection.position;
+      nextSection.position = switchVar;
+      await section.save();
+      await nextSection.save();
     }
     // return
     res.status(200).json({ msg: "ok" });
@@ -168,8 +167,8 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
 // Update position down
 router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
   // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+  const section = await Section.findByPk(req.params.id);
+  if (!section) return res.status(404).json({ erreur: "Non trouvé" });
 
   // verify session
   if (!req.Session) {
@@ -178,7 +177,7 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
   if (req.Session.role === "admin");
   else if (
     req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
+    req.Session.etablissement_id == section.etablissement_id
   );
   else {
     return res.status(403).json({ erreur: "Forbidden" });
@@ -186,22 +185,22 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // search previous menu
-    const previousMenu = await Dynamicmenu.findOne({
+    const previousSection = await Section.findOne({
       where: {
-        etablissement_id: menu.etablissement_id,
+        dynamic_menu_id: section.dynamic_menu_id,
         position: {
-          [Op.lt]: menu.position, // inferior
+          [Op.lt]: section.position, // inferior
         },
       },
       order: [["position", "DESC"]], // plus proche valeur inférieure
     });
     // switch
-    if (previousMenu) {
-      const switchVar = menu.position;
-      menu.position = previousMenu.position;
-      previousMenu.position = switchVar;
-      await menu.save();
-      await previousMenu.save();
+    if (previousSection) {
+      const switchVar = section.position;
+      section.position = previousSection.position;
+      previousSection.position = switchVar;
+      await section.save();
+      await previousSection.save();
     }
     // return
     res.status(200).json({ msg: "ok" });
@@ -209,7 +208,6 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
     next(err);
   }
 });
-*/
 
 // CREATE
 router.post("/", auth, async (req, res, next) => {
