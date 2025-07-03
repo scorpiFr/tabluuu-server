@@ -59,13 +59,12 @@ router.get(
     }
   }
 );
-/*
 
-// GET one menu
+// GET one
 router.get("/:id(\\d+)", auth, async (req, res, next) => {
-  // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+  // get section
+  const section = await Section.findByPk(req.params.id);
+  if (!section) return res.status(404).json({ erreur: "Non trouvé" });
 
   // verify session
   if (!req.Session) {
@@ -74,15 +73,17 @@ router.get("/:id(\\d+)", auth, async (req, res, next) => {
   if (req.Session.role === "admin");
   else if (
     req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
+    req.Session.etablissement_id == section.etablissement_id
   );
   else {
     return res.status(403).json({ erreur: "Forbidden" });
   }
 
   // return
-  res.status(200).json(menu);
+  res.status(200).json(section);
 });
+
+/*
 
 // CHANGE selectedMenu
 router.patch("/setselected/:id(\\d+)", auth, async (req, res, next) => {
