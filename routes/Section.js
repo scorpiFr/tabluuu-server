@@ -83,50 +83,11 @@ router.get("/:id(\\d+)", auth, async (req, res, next) => {
   res.status(200).json(section);
 });
 
-/*
-
-// CHANGE selectedMenu
-router.patch("/setselected/:id(\\d+)", auth, async (req, res, next) => {
-  // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
-
-  // verify session
-  if (!req.Session) {
-    return res.status(401).json({ erreur: "Bad auth token" });
-  }
-  if (req.Session.role === "admin");
-  else if (
-    req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
-  );
-  else {
-    return res.status(403).json({ erreur: "Forbidden" });
-  }
-
-  try {
-    // set all etablissement menu to zero
-    await sequelize.query(
-      "UPDATE dynamic_menu SET is_active = 0 WHERE etablissement_id = :etabId",
-      {
-        replacements: { etabId: menu.etablissement_id },
-      }
-    );
-    // update
-    menu.is_active = 1;
-    await menu.save();
-    // return
-    res.status(200).json({ msg: "ok" });
-  } catch (err) {
-    next(err);
-  }
-});
-
 // Update name
 router.patch("/:id(\\d+)", auth, async (req, res, next) => {
-  // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+  // get section
+  const section = await Section.findByPk(req.params.id);
+  if (!section) return res.status(404).json({ erreur: "Non trouvé" });
 
   // verify session
   if (!req.Session) {
@@ -135,7 +96,7 @@ router.patch("/:id(\\d+)", auth, async (req, res, next) => {
   if (req.Session.role === "admin");
   else if (
     req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
+    req.Session.etablissement_id == section.etablissement_id
   );
   else {
     return res.status(403).json({ erreur: "Forbidden" });
@@ -149,14 +110,15 @@ router.patch("/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // update
-    menu.nom = nom;
-    await menu.save();
+    section.nom = nom;
+    await section.save();
     // return
     res.status(200).json({ msg: "ok" });
   } catch (err) {
     next(err);
   }
 });
+/*
 
 // Update position up
 router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
