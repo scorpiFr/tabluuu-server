@@ -171,6 +171,96 @@ router.patch("/:id(\\d+)", auth, async (req, res, next) => {
   }
 });
 
+// Update position up
+router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // search next menu
+    const nextMenu = await Dynamicmenu.findOne({
+      where: {
+        etablissement_id: menu.etablissement_id,
+        position: {
+          [Op.gt]: menu.position, // superior
+        },
+      },
+      order: [["position", "ASC"]], // plus proche valeur inférieure
+    });
+    // switch
+    if (nextMenu) {
+      const switchVar = menu.position;
+      menu.position = nextMenu.position;
+      nextMenu.position = switchVar;
+      await menu.save();
+      await nextMenu.save();
+    }
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update position down
+router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // search previous menu
+    const previousMenu = await Dynamicmenu.findOne({
+      where: {
+        etablissement_id: menu.etablissement_id,
+        position: {
+          [Op.lt]: menu.position, // inferior
+        },
+      },
+      order: [["position", "DESC"]], // plus proche valeur inférieure
+    });
+    // switch
+    if (previousMenu) {
+      const switchVar = menu.position;
+      menu.position = previousMenu.position;
+      previousMenu.position = switchVar;
+      await menu.save();
+      await previousMenu.save();
+    }
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // CREATE
 router.post("/", auth, async (req, res, next) => {
   // verify inputs
