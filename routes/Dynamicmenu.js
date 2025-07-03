@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { sequelize, Dynamicmenu } = require("../models");
+const { Op } = require("sequelize");
 
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
@@ -224,6 +225,52 @@ router.post("/", auth, async (req, res, next) => {
     });
 
     res.status(201).json(created);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE
+router.delete("/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const menu = await Dynamicmenu.findByPk(req.params.id);
+  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == menu.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // if menu is active, activate another
+    if (menu.is_active == 1) {
+      const menu2 = await Dynamicmenu.findOne({
+        where: {
+          etablissement_id: menu.etablissement_id,
+          id: {
+            [Op.ne]: menu.id, // Exclut id du menu
+          },
+        },
+        order: [["id", "DESC"]],
+      });
+      if (menu2) {
+        menu2.is_active = 1;
+        await menu2.save();
+      }
+    }
+
+    // delete
+    await menu.destroy();
+    // return
+    res.status(200).json({ msg: "ok" });
   } catch (err) {
     next(err);
   }
