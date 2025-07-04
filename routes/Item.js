@@ -64,6 +64,54 @@ router.get(
   }
 );
 
+// Update name
+router.patch("/partialupdate/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const item = await Item.findByPk(req.params.id);
+  if (!item) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == item.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // verify inputs
+  const { nom, prix, description } = req.body;
+  let inputErrors = [];
+  if (!nom) {
+    inputErrors.push("nom");
+  }
+  const prix2 = prix.trim().replace(",", ".");
+  if (!prix2 || !isStrictDecimal(prix2)) {
+    inputErrors.push("prix");
+  }
+  if (inputErrors.length > 0) {
+    return res
+      .status(400)
+      .json({ error: "Mandatory fields : " + inputErrors.join() });
+  }
+
+  try {
+    // update
+    item.nom = nom;
+    item.prix = prix2;
+    item.description = description;
+    await item.save();
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /*
 // GET one menu
 router.get("/:id(\\d+)", auth, async (req, res, next) => {
@@ -86,42 +134,6 @@ router.get("/:id(\\d+)", auth, async (req, res, next) => {
 
   // return
   res.status(200).json(menu);
-});
-
-// Update name
-router.patch("/:id(\\d+)", auth, async (req, res, next) => {
-  // get menu
-  const menu = await Dynamicmenu.findByPk(req.params.id);
-  if (!menu) return res.status(404).json({ erreur: "Non trouvé" });
-
-  // verify session
-  if (!req.Session) {
-    return res.status(401).json({ erreur: "Bad auth token" });
-  }
-  if (req.Session.role === "admin");
-  else if (
-    req.Session.role === "etablissement" &&
-    req.Session.etablissement_id == menu.etablissement_id
-  );
-  else {
-    return res.status(403).json({ erreur: "Forbidden" });
-  }
-
-  // verify inputs
-  const { nom } = req.body;
-  if (!nom) {
-    return res.status(400).json({ error: "Mandatory field : nom" });
-  }
-
-  try {
-    // update
-    menu.nom = nom;
-    await menu.save();
-    // return
-    res.status(200).json({ msg: "ok" });
-  } catch (err) {
-    next(err);
-  }
 });
 
 // Update position up
