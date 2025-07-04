@@ -267,6 +267,7 @@ router.post("/", auth, async (req, res, next) => {
       section_id: section.id,
       nom,
       prix,
+      description,
       position,
     });
 
