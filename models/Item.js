@@ -39,6 +39,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      image: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
+      thumbnail: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
