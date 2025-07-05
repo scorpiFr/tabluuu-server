@@ -96,8 +96,8 @@ router.get("/getqrcode", async (req, res) => {
   }
 
   // Chemin du dossier et du fichier
-  const dirPath = path.join(BASE_DIR, barid);
-  const fileName = `qrcode_${table}.jpg`;
+  const dirPath = path.join(BASE_DIR, `${barid}/QrCodes/`);
+  const fileName = `${table}.jpg`;
   const filePath = path.join(dirPath, fileName);
 
   // Vérifier si le fichier existe
