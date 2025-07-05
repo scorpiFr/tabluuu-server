@@ -26,13 +26,18 @@ router.patch(
     if (!req.file) {
       return res.status(400).json({ erreur: "No image received" });
     }
+    const tempPath = req.file.path;
 
     // get item
     const item = await Item.findByPk(req.params.id);
-    if (!item) return res.status(404).json({ erreur: "Non trouvé" });
+    if (!item) {
+      fs.unlink(tempPath, (err) => {});
+      return res.status(404).json({ erreur: "Non trouvé" });
+    }
 
     // verify session
     if (!req.Session) {
+      fs.unlink(tempPath, (err) => {});
       return res.status(401).json({ erreur: "Bad auth token" });
     }
     if (req.Session.role === "admin");
@@ -41,12 +46,12 @@ router.patch(
       req.Session.etablissement_id == item.etablissement_id
     );
     else {
+      fs.unlink(tempPath, (err) => {});
       return res.status(403).json({ erreur: "Forbidden" });
     }
 
     try {
       // inits
-      const tempPath = req.file.path;
       const relativeTargetDir = item.etablissement_id + "/images";
       const absoluteTargetDir = path.join(
         process.env.UPLOAD_FILE_PATH + "/" + relativeTargetDir
@@ -55,11 +60,13 @@ router.patch(
       // verify extention
       const originalName = req.file.originalname;
       if (originalName.length > 200) {
+        fs.unlink(tempPath, (err) => {});
         return res.status(400).json({
           error: "Filename too long (200 char max) : " + originalName,
         });
       }
       if (!is_allowedImageExtention(tempPath, originalName)) {
+        fs.unlink(tempPath, (err) => {});
         return res.status(400).json({ error: "Forbidden mimetype" });
       }
 
@@ -70,11 +77,11 @@ router.patch(
 
       // delete old images
       if (item.image.length > 0) {
-        deleteFile(process.env.UPLOAD_FILE_PATH + item.image);
+        deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.image);
         item.image = "";
       }
       if (item.thumbnail.length > 0) {
-        deleteFile(process.env.UPLOAD_FILE_PATH + item.thumbnail);
+        deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
         item.thumbnail = "";
       }
 
@@ -103,6 +110,8 @@ router.patch(
       res.status(200).json({ item });
     } catch (err) {
       next(err);
+    } finally {
+      fs.unlink(tempPath, (err) => {});
     }
   }
 );
