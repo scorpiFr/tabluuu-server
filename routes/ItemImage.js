@@ -47,9 +47,9 @@ router.patch(
     try {
       // inits
       const tempPath = req.file.path;
-      const relativeTargetDir = "/" + item.etablissement_id + "/images";
+      const relativeTargetDir = item.etablissement_id + "/images";
       const absoluteTargetDir = path.join(
-        process.env.UPLOAD_FILE_PATH + relativeTargetDir
+        process.env.UPLOAD_FILE_PATH + "/" + relativeTargetDir
       );
 
       // verify extention
