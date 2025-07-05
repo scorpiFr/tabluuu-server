@@ -1,11 +1,13 @@
+require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const { sequelize, Section, Item } = require("../models");
 const { Op } = require("sequelize");
-
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
+
 const auth = require("../middleware/auth.js");
+const { deleteFile } = require("../Helpers/ImageHelper.js");
 
 async function getMaxPosition(sectionId) {
   try {
@@ -289,6 +291,49 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
     await item.destroy();
     // return
     res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// remove image
+router.patch("/removeimage/:id(\\d+)", auth, async (req, res, next) => {
+  // get item
+  const item = await Item.findByPk(req.params.id);
+  if (!item) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == item.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // delete old images
+    let flagChanged = false;
+    if (item.image.length > 0) {
+      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.image);
+      item.image = "";
+      flagChanged = true;
+    }
+    if (item.thumbnail.length > 0) {
+      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
+      item.thumbnail = "";
+      flagChanged = true;
+    }
+    // save item
+    if (flagChanged) {
+      item.save();
+    }
+    // return
+    res.status(200).json({ item });
   } catch (err) {
     next(err);
   }
