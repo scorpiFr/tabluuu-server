@@ -100,7 +100,7 @@ router.patch(
       // deleteFile(tempPath);
 
       // return
-      res.status(200).json({ msg: "ok" });
+      res.status(200).json({ item });
     } catch (err) {
       next(err);
     }
