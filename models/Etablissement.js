@@ -66,6 +66,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.CHAR(1),
         defaultValue: "0",
       },
+      is_available: {
+        type: DataTypes.CHAR(1),
+        defaultValue: "1",
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
