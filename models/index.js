@@ -12,7 +12,7 @@ const sequelize = new Sequelize(
   }
 );
 
-const Test = require("./Test")(sequelize, Sequelize.DataTypes);
+// const Test = require("./Test")(sequelize, Sequelize.DataTypes);
 const Etablissement = require("./Etablissement")(
   sequelize,
   Sequelize.DataTypes
@@ -22,14 +22,16 @@ const Dynamicmenu = require("./Dynamicmenu")(sequelize, Sequelize.DataTypes);
 const Section = require("./Section")(sequelize, Sequelize.DataTypes);
 const Item = require("./Item")(sequelize, Sequelize.DataTypes);
 const Staticmenu = require("./Staticmenu")(sequelize, Sequelize.DataTypes);
+const StaticItem = require("./StaticItem")(sequelize, Sequelize.DataTypes);
 
 module.exports = {
   sequelize,
-  Test,
+  // Test,
   Etablissement,
   Session,
   Dynamicmenu,
   Section,
   Item,
   Staticmenu,
+  StaticItem,
 };

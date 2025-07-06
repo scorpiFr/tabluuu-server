@@ -14,6 +14,8 @@ const ItemRoutes = require("./routes/Item");
 const ItemImageRoutes = require("./routes/ItemImage");
 const FrontRoutes = require("./routes/EtablissementFrontData");
 const StaticmenuRoutes = require("./routes/Staticmenu");
+const StaticItemRoutes = require("./routes/StaticItem");
+const StaticItemImageRoutes = require("./routes/StaticItemImage");
 
 app.use(cors()); // Autorise toutes les origines des requetes
 app.use(express.json());
@@ -29,6 +31,8 @@ app.use("/admin/section", SectionRoutes);
 app.use("/admin/item", ItemRoutes);
 app.use("/admin/item", ItemImageRoutes);
 app.use("/admin/staticmenu", StaticmenuRoutes);
+app.use("/admin/staticitem", StaticItemRoutes);
+app.use("/admin/staticitem", StaticItemImageRoutes);
 
 // gestion des erreurs
 const errorHandler = require("./middleware/errorHandler");

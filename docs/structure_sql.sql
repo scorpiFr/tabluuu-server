@@ -121,3 +121,18 @@ CREATE TABLE static_menu (
 );
 CREATE INDEX idx_etablissementid ON static_menu (etablissement_id);
 
+DROP TABLE static_item;
+DROP INDEX idx_etablissementid ON static_item;
+DROP INDEX idx_staticmenuid ON static_item;
+CREATE TABLE static_item (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	etablissement_id INT DEFAULT 0,
+	static_menu_id INT DEFAULT 0,
+	position INT DEFAULT 0,
+	image VARCHAR(255) DEFAULT '',
+	thumbnail VARCHAR(255) DEFAULT '',
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_staticmenuid ON static_item (static_menu_id);
+CREATE INDEX idx_etablissementid ON static_item (etablissement_id);
