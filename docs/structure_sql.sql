@@ -14,6 +14,7 @@ CREATE TABLE etablissement (
 	type_contrat VARCHAR(255) NOT NULL DEFAULT 'commande',
 	prix DECIMAL(5, 2) NOT NULL DEFAULT 0,
 	is_allocated CHAR(1) DEFAULT '0',
+	is_available CHAR(1) DEFAULT '1',
 	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -43,6 +44,17 @@ type='bar',
 password='123',
 secret_key='123'
 ;
+
+INSERT INTO etablissement set
+id=7,
+email_facturation='a7@tabluuu.com',
+email_commandes='contact.tabluuu@gmail.com',
+nom_etablissement='La mer égée',
+type='bar',
+password= "44875f87cbe3866408e22d06f8e2477ffcbc4ee3",
+secret_key="456",
+type_contrat="commande";
+
 */
 
 DROP TABLE dynamic_menu;
@@ -94,3 +106,18 @@ CREATE TABLE item (
 CREATE INDEX idx_etablissementid ON item (etablissement_id);
 CREATE INDEX idx_dynmenuid ON item (dynamic_menu_id);
 CREATE INDEX idx_sectionid ON item (section_id);
+
+
+DROP TABLE static_menu;
+DROP INDEX idx_etablissementid ON static_menu;
+CREATE TABLE static_menu (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	etablissement_id INT DEFAULT 0,
+	nom VARCHAR(255) DEFAULT '',
+	is_active CHAR(1) DEFAULT '0',
+	position INT DEFAULT 0,
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_etablissementid ON static_menu (etablissement_id);
+

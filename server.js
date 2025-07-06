@@ -12,19 +12,23 @@ const DynamicmenuRoutes = require("./routes/Dynamicmenu");
 const SectionRoutes = require("./routes/Section");
 const ItemRoutes = require("./routes/Item");
 const ItemImageRoutes = require("./routes/ItemImage");
+const FrontRoutes = require("./routes/EtablissementFrontData");
+const StaticmenuRoutes = require("./routes/Staticmenu");
 
 app.use(cors()); // Autorise toutes les origines des requetes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/etablissementfrontdata", FrontRoutes);
 app.use("/test", testRoutes);
-app.use("/", getfileRoutes);
 app.use("/", sendmailRoutes);
+app.use("/", getfileRoutes);
 app.use("/admin/", securityRoutes);
 app.use("/admin/etablissement", EtablissementRoutes);
 app.use("/admin/dynamicmenu", DynamicmenuRoutes);
 app.use("/admin/section", SectionRoutes);
 app.use("/admin/item", ItemRoutes);
 app.use("/admin/item", ItemImageRoutes);
+app.use("/admin/staticmenu", StaticmenuRoutes);
 
 // gestion des erreurs
 const errorHandler = require("./middleware/errorHandler");

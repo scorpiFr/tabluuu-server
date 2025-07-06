@@ -21,6 +21,7 @@ const Session = require("./Session")(sequelize, Sequelize.DataTypes);
 const Dynamicmenu = require("./Dynamicmenu")(sequelize, Sequelize.DataTypes);
 const Section = require("./Section")(sequelize, Sequelize.DataTypes);
 const Item = require("./Item")(sequelize, Sequelize.DataTypes);
+const Staticmenu = require("./Staticmenu")(sequelize, Sequelize.DataTypes);
 
 module.exports = {
   sequelize,
@@ -30,4 +31,5 @@ module.exports = {
   Dynamicmenu,
   Section,
   Item,
+  Staticmenu,
 };
