@@ -134,42 +134,4 @@ router.get("/getqrcode", async (req, res) => {
   });
 });
 
-router.get("/getpage", async (req, res) => {
-  const barid = req.query.barid;
-  const table = "";
-  const type = req.query.type ?? "bar";
-  const url = `http://localhost:4000/getqrcode/?barid=${barid}&type=${type}`;
-  let html = `<style>img {max-width: 150px;}</style>
-  <center>Tabluuu ${barid}`;
-
-  // html
-  html += `<div nowrap>
-  <img src="${url}&table=table_1" />
-  <img src="${url}&table=table_2" />
-  <img src="${url}&table=table_3" />
-  <img src="${url}&table=table_4" />
-  </div>
-  <div nowrap>
-  <img src="${url}&table=table_5" />
-  <img src="${url}&table=table_6" />
-  <img src="${url}&table=table_7" />
-  <img src="${url}&table=table_8" />
-  </div>
- <div nowrap>
-  <img src="${url}&table=table_9" />
-  <img src="${url}&table=table_10" />
-  <img src="${url}&table=table_11" />
-  <img src="${url}&table=table_12" />
-  </div>
- <div nowrap>
-  <img src="${url}&table=table_13" />
-  <img src="${url}&table=table_14" />
-  <img src="${url}&table=table_15" />
-  <img src="${url}&table=table_16" />
-  </div>
-  </center>`;
-  // return
-  res.status(200).send(html);
-});
-
 module.exports = router;
