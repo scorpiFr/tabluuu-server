@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { Etablissement, Dynamicmenu, Section, Item } = require("../models");
+const {
+  Etablissement,
+  Dynamicmenu,
+  Section,
+  Item,
+  Staticmenu,
+  StaticItem,
+} = require("../models");
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 
@@ -173,18 +180,48 @@ function renderDynamicData(etablissement, sections, items) {
 }
 
 async function getStaticData(etablissementId) {
-  return null;
+  // menu
+  const menu = await Staticmenu.findOne({
+    where: { etablissement_id: etablissementId, is_active: 1 },
+  });
+  if (!menu) {
+    return [null];
+  }
+  // items
+  const items = await StaticItem.findAll({
+    where: { static_menu_id: menu.id },
+    order: [["position", "ASC"]],
+  });
+  return items;
 }
 
-function renderStaticData(etablissement, images) {
-  return null;
+/*
+{
+  "name": "Housegang bar - demo",
+  "type": "bar",
+  "isAvailable": 1,
+  "menutype": "image",
+  "images": ["1/menu1.jpg"]
+}
+*/
+function renderStaticData(etablissement, items) {
+  const res = {
+    name: etablissement.nom_etablissement,
+    type: etablissement.type,
+    isAvailable: etablissement.is_available,
+    menutype: etablissement.type_contrat,
+    images: items?.map((item) => {
+      return item.image;
+    }),
+  };
+  return res;
 }
 
 // GET by ID
 router.get("/:id(\\d+)", async (req, res, next) => {
   let res2 = {};
   try {
-    const etablissementId = 1; // req.params.id;
+    const etablissementId = req.params.id;
     // etablissement
     const etablissement = await Etablissement.findByPk(etablissementId);
     if (!etablissement) return res.status(404).json({ erreur: "Non trouvé" });
@@ -196,8 +233,8 @@ router.get("/:id(\\d+)", async (req, res, next) => {
       const [menu, sections, items] = await getDynamicData(etablissement.id);
       res2 = renderDynamicData(etablissement, sections, items);
     } else if (etablissement.type_contrat === "image") {
-      const images = await getStaticData(etablissementId);
-      res2 = renderStaticData(etablissement, images);
+      const items = await getStaticData(etablissementId);
+      res2 = renderStaticData(etablissement, items);
     }
     // return
     res.json(res2);
