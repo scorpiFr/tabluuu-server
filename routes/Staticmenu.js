@@ -269,7 +269,7 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
       await nextMenu.save();
     }
     // return
-    res.status(200).json({ msg: "ok" });
+    res.status(200).json([menu, nextMenu]);
   } catch (err) {
     next(err);
   }
@@ -314,7 +314,7 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
       await previousMenu.save();
     }
     // return
-    res.status(200).json({ msg: "ok" });
+    res.status(200).json([menu, previousMenu]);
   } catch (err) {
     next(err);
   }
