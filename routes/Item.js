@@ -153,7 +153,7 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
       await nextItem.save();
     }
     // return
-    res.status(200).json({ msg: "ok" });
+    res.status(200).json([item, nextItem]);
   } catch (err) {
     next(err);
   }
@@ -198,7 +198,7 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
       await previousItem.save();
     }
     // return
-    res.status(200).json({ msg: "ok" });
+    res.status(200).json([item, previousItem]);
   } catch (err) {
     next(err);
   }
