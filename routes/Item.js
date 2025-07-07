@@ -333,7 +333,7 @@ router.patch("/removeimage/:id(\\d+)", auth, async (req, res, next) => {
       item.save();
     }
     // return
-    res.status(200).json({ item });
+    res.status(200).json(item);
   } catch (err) {
     next(err);
   }
