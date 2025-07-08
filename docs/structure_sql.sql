@@ -136,3 +136,24 @@ CREATE TABLE static_item (
 );
 CREATE INDEX idx_staticmenuid ON static_item (static_menu_id);
 CREATE INDEX idx_etablissementid ON static_item (etablissement_id);
+
+DROP TABLE user;
+CREATE TABLE user (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+	password VARCHAR(255) NOT NULL,
+	secret_key VARCHAR(255) NOT NULL,
+	role VARCHAR(255) NOT NULL DEFAULT 'commercial',
+	is_available CHAR(1) DEFAULT '1',
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+/*
+INSERT INTO user set
+email='scorpifr@gmail.com',
+password= "44875f87cbe3866408e22d06f8e2477ffcbc4ee3",
+secret_key="123",
+role="commercial",
+is_available=1;
+*/

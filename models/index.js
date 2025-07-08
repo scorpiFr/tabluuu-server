@@ -23,6 +23,7 @@ const Section = require("./Section")(sequelize, Sequelize.DataTypes);
 const Item = require("./Item")(sequelize, Sequelize.DataTypes);
 const Staticmenu = require("./Staticmenu")(sequelize, Sequelize.DataTypes);
 const StaticItem = require("./StaticItem")(sequelize, Sequelize.DataTypes);
+const User = require("./User")(sequelize, Sequelize.DataTypes);
 
 module.exports = {
   sequelize,
@@ -34,4 +35,5 @@ module.exports = {
   Item,
   Staticmenu,
   StaticItem,
+  User,
 };
