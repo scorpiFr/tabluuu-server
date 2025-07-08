@@ -14,6 +14,7 @@ const {
   is_allowedImageExtention,
   deleteFile,
 } = require("../Helpers/ImageHelper.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 // Update image
 // must send data as form-data
@@ -102,10 +103,8 @@ router.patch(
 
       // update item
       await item.save();
-
-      // delete image source
-      // deleteFile(tempPath);
-
+      // empty cache
+      emtyEtablissementCache(item.etablissement_id);
       // return
       res.status(200).json(item);
     } catch (err) {

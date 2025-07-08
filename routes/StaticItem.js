@@ -8,6 +8,7 @@ const upload = multer(); // pas de stockage, en mémoire
 
 const auth = require("../middleware/auth.js");
 const { deleteFile } = require("../Helpers/ImageHelper.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 // LIST
 router.get(
@@ -82,6 +83,8 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
       await item.save();
       await nextItem.save();
     }
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // return
     res.status(200).json([item, nextItem]);
   } catch (err) {
@@ -127,6 +130,8 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
       await item.save();
       await previousItem.save();
     }
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // return
     res.status(200).json([item, previousItem]);
   } catch (err) {
@@ -164,7 +169,8 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
       deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
       item.thumbnail = "";
     }
-
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // delete
     await item.destroy();
     // return

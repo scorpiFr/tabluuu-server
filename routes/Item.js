@@ -8,6 +8,7 @@ const upload = multer(); // pas de stockage, en mémoire
 
 const auth = require("../middleware/auth.js");
 const { deleteFile } = require("../Helpers/ImageHelper.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 async function getMaxPosition(sectionId) {
   try {
@@ -107,6 +108,8 @@ router.patch("/partialupdate/:id(\\d+)", auth, async (req, res, next) => {
     item.prix = prix2;
     item.description = description;
     await item.save();
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // return
     res.status(200).json({ msg: "ok" });
   } catch (err) {
@@ -152,6 +155,8 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
       await item.save();
       await nextItem.save();
     }
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // return
     res.status(200).json([item, nextItem]);
   } catch (err) {
@@ -197,6 +202,8 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
       await item.save();
       await previousItem.save();
     }
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // return
     res.status(200).json([item, previousItem]);
   } catch (err) {
@@ -260,7 +267,9 @@ router.post("/", auth, async (req, res, next) => {
       description,
       position,
     });
-
+    // empty cache
+    emtyEtablissementCache(section.etablissement_id);
+    // return
     res.status(201).json(created);
   } catch (err) {
     next(err);
@@ -287,6 +296,8 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
   }
 
   try {
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // delete
     await item.destroy();
     // return
@@ -331,6 +342,8 @@ router.patch("/removeimage/:id(\\d+)", auth, async (req, res, next) => {
     // save item
     if (flagChanged) {
       item.save();
+      // empty cache
+      emtyEtablissementCache(item.etablissement_id);
     }
     // return
     res.status(200).json(item);

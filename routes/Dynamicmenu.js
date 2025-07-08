@@ -6,6 +6,7 @@ const { Op } = require("sequelize");
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 const auth = require("../middleware/auth.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 async function countMenus(etablissementId) {
   try {
@@ -128,6 +129,8 @@ router.patch("/setselected/:id(\\d+)", auth, async (req, res, next) => {
     // update
     menu.is_active = 1;
     await menu.save();
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
     // return
     res.status(200).json({ msg: "ok" });
   } catch (err) {
@@ -164,6 +167,8 @@ router.patch("/:id(\\d+)", auth, async (req, res, next) => {
     // update
     menu.nom = nom;
     await menu.save();
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
     // return
     res.status(200).json({ msg: "ok" });
   } catch (err) {
@@ -209,6 +214,8 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
       await menu.save();
       await nextMenu.save();
     }
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
     // return
     res.status(200).json([menu, nextMenu]);
   } catch (err) {
@@ -254,6 +261,8 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
       await menu.save();
       await previousMenu.save();
     }
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
     // return
     res.status(200).json([menu, previousMenu]);
   } catch (err) {
@@ -302,7 +311,8 @@ router.post("/", auth, async (req, res, next) => {
   if (error2) {
     return res.status(500).json({ erreur: error2 });
   }
-
+  // empty cache
+  emtyEtablissementCache(etablissement_id);
   // create
   const is_active = nbrMenus > 0 ? 0 : 1;
   const position = maxPosition > 0 ? maxPosition + 10 : 10;
@@ -356,7 +366,8 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
         await menu2.save();
       }
     }
-
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
     // delete
     await menu.destroy();
     // return

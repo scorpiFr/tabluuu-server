@@ -10,6 +10,11 @@ const {
 } = require("../models");
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
+const {
+  getEtablissementCache,
+  setEtablissementCache,
+  emtyEtablissementCache,
+} = require("../modules/APIEtablissementCache");
 
 /*
 modele d'api : 
@@ -219,6 +224,13 @@ function renderStaticData(etablissement, items) {
 
 // GET by ID
 router.get("/:id(\\d+)", async (req, res, next) => {
+  // get from cache
+  const cacheValue = getEtablissementCache(req.params.id);
+  if (cacheValue) {
+    return res.json(cacheValue);
+  }
+
+  // get data and calculate
   let res2 = {};
   try {
     const etablissementId = req.params.id;
@@ -236,6 +248,8 @@ router.get("/:id(\\d+)", async (req, res, next) => {
       const items = await getStaticData(etablissementId);
       res2 = renderStaticData(etablissement, items);
     }
+    // set to cache
+    setEtablissementCache(etablissementId, res2);
     // return
     res.json(res2);
   } catch (err) {

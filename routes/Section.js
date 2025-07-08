@@ -6,6 +6,7 @@ const { Op } = require("sequelize");
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 const auth = require("../middleware/auth.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 async function getMaxPosition(dynMenuId) {
   try {
@@ -112,6 +113,8 @@ router.patch("/:id(\\d+)", auth, async (req, res, next) => {
     // update
     section.nom = nom;
     await section.save();
+    // empty cache
+    emtyEtablissementCache(section.etablissement_id);
     // return
     res.status(200).json({ msg: "ok" });
   } catch (err) {
@@ -157,6 +160,8 @@ router.patch("/moveup/:id(\\d+)", auth, async (req, res, next) => {
       await section.save();
       await nextSection.save();
     }
+    // empty cache
+    emtyEtablissementCache(section.etablissement_id);
     // return
     res.status(200).json([section, nextSection]);
   } catch (err) {
@@ -202,6 +207,8 @@ router.patch("/movedown/:id(\\d+)", auth, async (req, res, next) => {
       await section.save();
       await previousSection.save();
     }
+    // empty cache
+    emtyEtablissementCache(section.etablissement_id);
     // return
     res.status(200).json([section, previousSection]);
   } catch (err) {
@@ -258,7 +265,9 @@ router.post("/", auth, async (req, res, next) => {
       nom,
       position,
     });
-
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
+    // return
     res.status(201).json(created);
   } catch (err) {
     next(err);
@@ -285,6 +294,8 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
   }
 
   try {
+    // empty cache
+    emtyEtablissementCache(section.etablissement_id);
     // delete
     await section.destroy();
     // return

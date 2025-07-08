@@ -14,6 +14,7 @@ const {
   is_allowedImageExtention,
   deleteFile,
 } = require("../Helpers/ImageHelper.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 async function getMaxPosition(staticMenuId) {
   try {
@@ -130,7 +131,9 @@ router.post("/", auth, upload.single("image"), async (req, res, next) => {
       image,
       thumbnail,
     });
-
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
+    // return
     res.status(201).json(created);
   } catch (err) {
     next(err);

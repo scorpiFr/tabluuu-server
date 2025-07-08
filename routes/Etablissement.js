@@ -9,6 +9,7 @@ const {
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 const auth = require("../middleware/auth.js");
+const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 // GET by ID
 router.get("/:id(\\d+)", auth, async (req, res, next) => {
@@ -93,7 +94,8 @@ router.patch(
       await Etablissement.update(updates, {
         where: { id: req.params.id },
       });
-
+      // empty cache
+      emtyEtablissementCache(etablissement.id);
       // return
       etablissement.dataValues = removeSecretInformations(
         etablissement.dataValues
@@ -106,7 +108,7 @@ router.patch(
   }
 );
 
-// update by ID
+// update password by ID
 router.patch("/updatePassword/:id(\\d+)", auth, async (req, res, next) => {
   // verify session
   if (!req.Session) {
