@@ -11,6 +11,34 @@ const upload = multer(); // pas de stockage, en mémoire
 const auth = require("../middleware/auth.js");
 const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
+// GET all
+router.get("/", auth, async (req, res, next) => {
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // get etablissements
+  try {
+    let etablissements = await Etablissement.findAll({
+      order: [["id", "DESC"]],
+    });
+    // reduce item data
+    etablissements = etablissements.map((etablissement) => {
+      return removeSecretInformations(etablissement);
+    });
+    //return
+    return res.json(etablissements);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET by ID
 router.get("/:id(\\d+)", auth, async (req, res, next) => {
   // verify session
