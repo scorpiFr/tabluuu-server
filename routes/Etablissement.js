@@ -185,6 +185,7 @@ router.get("/:id(\\d+)", auth, async (req, res, next) => {
     return res.status(401).json({ erreur: "Bad auth token" });
   }
   if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
   else if (
     req.Session.role === "etablissement" &&
     req.Session.etablissement_id == req.params.id
