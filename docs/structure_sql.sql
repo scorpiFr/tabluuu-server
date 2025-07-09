@@ -157,3 +157,24 @@ secret_key="123",
 role="commercial",
 is_available=1;
 */
+
+DROP INDEX idx_etablissementid ON bill;
+DROP TABLE bill;
+CREATE TABLE bill (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+	etablissement_id INT DEFAULT 0,
+	status VARCHAR(255) DEFAULT 'pending',
+	amount DECIMAL(10, 2) DEFAULT 0,
+	filepath VARCHAR(255) DEFAULT '',
+	date_payment DATETIME,
+	max_date_payment DATETIME,
+	month INT DEFAULT 0,
+	year INT DEFAULT 0,
+	month_amount DECIMAL(10, 2) DEFAULT 0,
+	qr_board_quantity INT DEFAULT 0,
+	qr_board_unit_price DECIMAL(10, 2) DEFAULT 0,
+	menu_edit_amount DECIMAL(10, 2) DEFAULT 0,
+	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_etablissementid ON bill (etablissement_id);
