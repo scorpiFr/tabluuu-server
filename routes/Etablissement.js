@@ -295,7 +295,7 @@ router.patch(
       // empty cache
       emtyEtablissementCache(etablissement.id);
       // return
-      res.status(200).json({ msg: "ok" });
+      res.status(200).json(etablissement);
     } catch (err) {
       next(err);
     }
