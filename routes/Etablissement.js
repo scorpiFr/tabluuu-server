@@ -77,7 +77,7 @@ router.post("/", auth, async (req, res, next) => {
   }
   if (
     !type_contrat ||
-    (type_contrat != "image" && type_contrat != "menu" && type != "commande")
+    (type_contrat != "image" && type_contrat != "menu" && type_contrat != "commande")
   ) {
     inputErrors.push("type_contrat");
   }
