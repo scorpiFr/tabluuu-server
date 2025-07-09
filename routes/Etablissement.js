@@ -77,11 +77,14 @@ router.post("/", auth, async (req, res, next) => {
   }
   if (
     !type_contrat ||
-    (type_contrat != "image" && type_contrat != "menu" && type_contrat != "commande")
+    (type_contrat != "image" &&
+      type_contrat != "menu" &&
+      type_contrat != "commande")
   ) {
     inputErrors.push("type_contrat");
   }
-  if (!prix || !isStrictDecimal(prix)) {
+  const prix2 = prix.trim().replace(",", ".");
+  if (!prix2 || !isStrictDecimal(prix2)) {
     inputErrors.push("prix");
   }
   if (is_allocated != 0 && is_allocated != 1) {
@@ -133,7 +136,7 @@ router.post("/", auth, async (req, res, next) => {
       adresse,
       tel,
       type_contrat,
-      prix,
+      prix: prix2,
       is_allocated,
       password,
       secret_key,
@@ -204,6 +207,100 @@ router.get("/:id(\\d+)", auth, async (req, res, next) => {
     next(err);
   }
 });
+
+// update by ID
+router.patch(
+  "/updateforcommercials/:id(\\d+)",
+  auth,
+  async (req, res, next) => {
+    // verify session
+    if (!req.Session) {
+      return res.status(401).json({ erreur: "Bad auth token" });
+    }
+    if (req.Session.role === "admin");
+    else if (req.Session.role === "commercial");
+    else {
+      return res.status(403).json({ erreur: "Forbidden" });
+    }
+
+    // get etablissement
+    const etablissement = await Etablissement.findByPk(req.params.id);
+    if (!etablissement) return res.status(404).json({ erreur: "Non trouvé" });
+
+    // verify inputs
+    let {
+      email_facturation,
+      email_commandes,
+      nom_etablissement,
+      type,
+      nom,
+      prenom,
+      adresse,
+      tel,
+      type_contrat,
+      prix,
+      is_allocated,
+    } = req.body;
+    let inputErrors = [];
+    if (!email_facturation || !emailIsValid(email_facturation)) {
+      inputErrors.push("email_facturation");
+    }
+    if (email_commandes.length > 0 && !emailIsValid(email_commandes)) {
+      inputErrors.push("email_commandes");
+    }
+    if (!nom_etablissement) {
+      inputErrors.push("nom_etablissement");
+    }
+    if (!type || (type != "bar" && type != "kebab" && type != "restaurant")) {
+      inputErrors.push("type");
+    }
+    if (
+      !type_contrat ||
+      (type_contrat != "image" &&
+        type_contrat != "menu" &&
+        type_contrat != "commande")
+    ) {
+      inputErrors.push("type_contrat");
+    }
+    const prix2 = prix.trim().replace(",", ".");
+    if (!prix2 || !isStrictDecimal(prix2)) {
+      inputErrors.push("prix");
+    }
+    if (is_allocated != 0 && is_allocated != 1) {
+      is_allocated = "0";
+    }
+    if (inputErrors.length > 0) {
+      return res
+        .status(400)
+        .json({ error: "Mandatory fields : " + inputErrors.join() });
+    }
+
+    // verify if email exists
+    // TODO
+
+    try {
+      // update
+      etablissement.email_facturation = email_facturation;
+      etablissement.email_commandes = email_commandes;
+      etablissement.nom_etablissement = nom_etablissement;
+      etablissement.type = type;
+      etablissement.nom = nom;
+      etablissement.prenom = prenom;
+      etablissement.adresse = adresse;
+      etablissement.tel = tel;
+      etablissement.type_contrat = type_contrat;
+      etablissement.prix2 = prix2;
+      etablissement.is_allocated = is_allocated;
+      await etablissement.save();
+      // empty cache
+      emtyEtablissementCache(etablissement.id);
+      // return
+      res.status(200).json({ msg: "ok" });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // update by ID
 router.patch(
