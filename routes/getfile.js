@@ -90,7 +90,7 @@ async function generateQrImage(proformaPath, barid, table) {
 router.get("/getqrcode", async (req, res) => {
   const barid = req.query.barid;
   const table = req.query.table;
-  const type = req.query.type ?? "bar";
+  const type = req.query.type || "bar";
 
   if (!barid || !table || !type) {
     return res.status(400).send("Missing barid, table or type parameter");
