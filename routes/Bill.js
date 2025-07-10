@@ -7,7 +7,11 @@ const auth = require("../middleware/auth.js");
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
-const { getTodayDateFR, generateInvoice } = require("../Helpers/BillHelper.js");
+const {
+  getTodayDateFR,
+  getTodayDateUS,
+  generateInvoice,
+} = require("../Helpers/BillHelper.js");
 const { sendInvoiceNotif, sendReceipt } = require("../Helpers/MailHelper.js");
 
 function isStrictDecimal(str) {
@@ -144,7 +148,7 @@ router.patch("/setpaid/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // action
-    bill.date_payment = getTodayDateFR();
+    bill.date_payment = getTodayDateUS();
     bill.status = "paid";
     await bill.save();
     console.log("bill saved");

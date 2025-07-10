@@ -11,6 +11,16 @@ function getTodayDateFR() {
 
   return `${day}/${month}/${year}`;
 }
+function getTodayDateUS() {
+  const today = new Date();
+
+  // Format DD/MM/YYYY
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // mois de 0 à 11
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
 
 /*
 const data = {
@@ -140,5 +150,6 @@ function generateInvoice(data, outputPath) {
 
 module.exports = {
   getTodayDateFR,
+  getTodayDateUS,
   generateInvoice,
 };

@@ -76,10 +76,10 @@ function sendReceipt(bill, etablissement) {
 <br />
 Votre facture ${bill.id} d'un montant de ${
     bill.amount
-  } à bien été payée le ${getTodayDateFR()}.<br />
+  } € à bien été payée le ${getTodayDateFR()}.<br />
 <br />
 <br />
-Vous pouvez consulter l'ensemble de vos factures en vous connectans à votre compte sur admin.tabluuu.fr, et aller sur la rebrique "mes factures".<br />
+Vous pouvez consulter l'ensemble de vos factures en vous connectans à votre compte sur admin.tabluuu.fr, et aller sur la rubrique "mes factures".<br />
 En cas de doute ou de problème, n'hésitez pas à contacter nos équipes.<br />
 <br />
 Pour nous contacter : contact.tabluuu@gmail.com ou 06 15 53 26 20<br />
