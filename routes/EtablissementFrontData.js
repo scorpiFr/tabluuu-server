@@ -160,6 +160,8 @@ function renderDynamicData(etablissement, sections, items) {
     type: etablissement.type,
     isAvailable: etablissement.is_available,
     menutype: etablissement.type_contrat,
+    email: etablissement.email_facturation,
+    email_service: etablissement.email_commandes,
     lines:
       sections?.map((section) => {
         return {
@@ -213,6 +215,8 @@ function renderStaticData(etablissement, items) {
   const res = {
     name: etablissement.nom_etablissement,
     type: etablissement.type,
+    email: etablissement.email_facturation,
+    email_service: etablissement.email_commandes,
     isAvailable: etablissement.is_available,
     menutype: etablissement.type_contrat,
     images: items?.map((item) => {
