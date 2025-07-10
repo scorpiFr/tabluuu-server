@@ -3,45 +3,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
-const axios = require("axios");
-
-function sendEmailBrevo(
-  apikey,
-  senderName,
-  senderEmail,
-  receiverName,
-  receiverEmail,
-  subject,
-  htmlContent
-) {
-  const body = {
-    sender: {
-      name: senderName,
-      email: senderEmail,
-    },
-    to: [
-      {
-        name: receiverName,
-        email: receiverEmail,
-      },
-    ],
-    subject: subject,
-    htmlContent: htmlContent,
-  };
-  const headers = {
-    Accept: "application/json",
-    "api-key": apikey,
-    "Content-Types": "application/json",
-  };
-  axios
-    .post("https://api.brevo.com/v3/smtp/email", body, { headers })
-    .then(() => {
-      // Succès
-    })
-    .catch((error) => {
-      console.error("Erreur lors de l'envoi email brevo :", error);
-    });
-}
+const { sendEmailBrevo } = require("../Helpers/MailHelper.js");
 
 function getCurrentDateTime() {
   const now = new Date();

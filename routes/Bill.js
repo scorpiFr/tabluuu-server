@@ -8,6 +8,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const { generateInvoice } = require("../Helpers/BillHelper.js");
+const { sendInvoiceNotif } = require("../Helpers/MailHelper.js");
 
 function isStrictDecimal(str) {
   return /^(-?\d+(\.\d+)?|-?\.\d+)$/.test(str);
@@ -150,6 +151,8 @@ router.post("/", auth, async (req, res, next) => {
     created.filepath = "" + relativeTargetPath;
     created.status = "created";
     await created.save();
+    // send invoice notif
+    sendInvoiceNotif(etablissement);
     // return
     res.status(201).json(created);
   } catch (err) {
