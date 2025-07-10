@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { sequelize, Etablissement } = require("../models");
+const { sequelize, Etablissement, Session } = require("../models");
 const {
   removeSecretInformations,
   encryptPassword,
@@ -449,6 +449,42 @@ router.get("/welcome/:id(\\d+)", auth, async (req, res, next) => {
 
     // return
     return res.status(200).json({ msg: "ok" });
+  } catch (error) {
+    console.error("Erreur PATCH user:", error);
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// sudo
+router.get("/sudo/:id(\\d+)", auth, async (req, res, next) => {
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // get etablissement
+    const etablissement = await Etablissement.findByPk(req.params.id);
+    if (!etablissement) {
+      return res.status(404).json({ error: "Etablissement non trouvé" });
+    }
+
+    // modif session
+    req.Session.etablissement_id = etablissement.id;
+    req.Session.user_id = 0;
+    req.Session.nom_etablissement = etablissement.nom_etablissement;
+    req.Session.nom = etablissement.nom;
+    req.Session.prenom = etablissement.prenom;
+    req.Session.role = "etablissement";
+    await req.Session.save();
+
+    // return
+    return res.status(200).json(req.Session);
   } catch (error) {
     console.error("Erreur PATCH user:", error);
     return res.status(500).json({ error: "Erreur serveur" });
