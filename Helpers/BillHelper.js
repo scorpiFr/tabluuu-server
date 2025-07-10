@@ -139,5 +139,6 @@ function generateInvoice(data, outputPath) {
 }
 
 module.exports = {
+  getTodayDateFR,
   generateInvoice,
 };

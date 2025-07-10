@@ -178,3 +178,7 @@ CREATE TABLE bill (
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_etablissementid ON bill (etablissement_id);
+
+/*
+Bill status : pending, created, paid, inactive 
+*/

@@ -7,8 +7,8 @@ const auth = require("../middleware/auth.js");
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
-const { generateInvoice } = require("../Helpers/BillHelper.js");
-const { sendInvoiceNotif } = require("../Helpers/MailHelper.js");
+const { getTodayDateFR, generateInvoice } = require("../Helpers/BillHelper.js");
+const { sendInvoiceNotif, sendReceipt } = require("../Helpers/MailHelper.js");
 
 function isStrictDecimal(str) {
   return /^(-?\d+(\.\d+)?|-?\.\d+)$/.test(str);
@@ -26,6 +26,79 @@ function getFuturDate(nbrDays = 0) {
 
   return `${year}-${month}-${day}`;
 }
+
+// LIST by etablissement
+router.get(
+  "/listbyetablissement/:etabid(\\d+)",
+  auth,
+  async (req, res, next) => {
+    // verify session
+    if (!req.Session) {
+      return res.status(401).json({ erreur: "Bad auth token" });
+    }
+    if (req.Session.role === "admin");
+    else if (req.Session.role === "commercial");
+    else if (
+      req.Session.role === "etablissement" &&
+      req.Session.etablissement_id == req.params.etabid
+    );
+    else {
+      return res.status(403).json({ erreur: "Forbidden" });
+    }
+
+    // search
+    try {
+      const bills = await Bill.findAll({
+        where: { etablissement_id: req.params.etabid },
+        order: [["ID", "DESC"]],
+      });
+      res.status(200).json(bills);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// pay
+router.patch("/setpaid/:id(\\d+)", auth, async (req, res, next) => {
+  // get menu
+  const bill = await Bill.findByPk(req.params.id);
+  if (!bill) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == bill.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+  // verif bill status
+  if (bill.status !== "created") {
+    return res.status(400).json({ erreur: "Cannot set bill to paid" });
+  }
+
+  try {
+    // action
+    bill.date_payment = getTodayDateFR();
+    bill.status = "paid";
+    await bill.save();
+    console.log("bill saved");
+    // send receipt
+    const etablissement = await Etablissement.findByPk(bill.etablissement_id);
+    sendReceipt(bill, etablissement);
+
+    // return
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // create
 router.post("/", auth, async (req, res, next) => {

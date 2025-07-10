@@ -1,5 +1,6 @@
 require("dotenv").config();
 const axios = require("axios");
+const { getTodayDateFR } = require("../Helpers/BillHelper.js");
 
 function sendEmailBrevo(
   apikey,
@@ -70,7 +71,40 @@ www.tabluuu.fr `;
   );
 }
 
+function sendReceipt(bill, etablissement) {
+  let html = `Bonjour ${etablissement.nom} ${etablissement.prenom},<br />
+<br />
+Votre facture ${bill.id} d'un montant de ${
+    bill.amount
+  } à bien été payée le ${getTodayDateFR()}.<br />
+<br />
+<br />
+Vous pouvez consulter l'ensemble de vos factures en vous connectans à votre compte sur admin.tabluuu.fr, et aller sur la rebrique "mes factures".<br />
+En cas de doute ou de problème, n'hésitez pas à contacter nos équipes.<br />
+<br />
+Pour nous contacter : contact.tabluuu@gmail.com ou 06 15 53 26 20<br />
+-- <br />
+TABLUUU<br />
+www.tabluuu.fr `;
+
+  const apiKey = process.env.BREVO_API_KEY;
+  const senderEmail = process.env.BREVO_SENDER_EMAIL;
+
+  // create calculated subject
+  const subject = `Recu pour la facture ${bill.id} .`;
+  // send mail
+  sendEmailBrevo(
+    apiKey,
+    "Tabluuu.fr",
+    senderEmail,
+    etablissement.email_facturation,
+    etablissement.email_facturation,
+    subject,
+    html
+  );
+}
 module.exports = {
+  sendReceipt,
   sendInvoiceNotif,
   sendEmailBrevo,
 };
