@@ -11,6 +11,7 @@ const {
   getRandomPassword,
   getRandomPasswordEncrypted,
 } = require("../Helpers/EtablissementHelper.js");
+const { sendWelcomeMail } = require("../Helpers/MailHelper.js");
 
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
@@ -404,6 +405,47 @@ router.patch("/updatePassword/:id(\\d+)", auth, async (req, res, next) => {
     await Etablissement.update(updates, {
       where: { id: req.params.id },
     });
+
+    // return
+    return res.status(200).json({ msg: "ok" });
+  } catch (error) {
+    console.error("Erreur PATCH user:", error);
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// welcome
+router.get("/welcome/:id(\\d+)", auth, async (req, res, next) => {
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  try {
+    // get etablissement
+    const etablissement = await Etablissement.findByPk(req.params.id);
+    if (!etablissement) {
+      return res.status(404).json({ error: "Etablissement non trouvé" });
+    }
+
+    // get new password
+    const password = getRandomPassword();
+
+    // update etablissement
+    const updates = {
+      password: encryptPassword(password),
+    };
+    await Etablissement.update(updates, {
+      where: { id: req.params.id },
+    });
+
+    // send welcome mail
+    sendWelcomeMail(etablissement, password);
 
     // return
     return res.status(200).json({ msg: "ok" });

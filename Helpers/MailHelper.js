@@ -79,7 +79,7 @@ Votre facture ${bill.id} d'un montant de ${
   } € à bien été payée le ${getTodayDateFR()}.<br />
 <br />
 <br />
-Vous pouvez consulter l'ensemble de vos factures en vous connectans à votre compte sur admin.tabluuu.fr, et aller sur la rubrique "mes factures".<br />
+Vous pouvez consulter l'ensemble de vos factures en vous connectant à votre compte sur admin.tabluuu.fr, et aller sur la rubrique "mes factures".<br />
 En cas de doute ou de problème, n'hésitez pas à contacter nos équipes.<br />
 <br />
 Pour nous contacter : contact.tabluuu@gmail.com ou 06 15 53 26 20<br />
@@ -103,8 +103,46 @@ www.tabluuu.fr `;
     html
   );
 }
+
+function sendWelcomeMail(etablissement, newPassword) {
+  let html = `Bonjour ${etablissement.nom} ${etablissement.prenom},<br />
+<br />
+Nous vous souhaitons la bienvenue aux services de tabluuu.<br />
+Vous voudriez sans doute commencer par modifier votre carte de restaurant ? <br />
+Vous pouvez en vous connectant à votre compte sur admin.tabluuu.fr, et aller sur la rubrique "mes cartes".<br />
+Votre email : ${etablissement.email_facturation}<br />
+Votre mot de passe : ${newPassword}<br />
+<br />
+Car oui, tabluuu vous permet d'avoir plusieurs cartes : le midi, le soir, l'été, l'hiver, en happy hour, etc... <br />
+Vous pouvez switcher de l'une a l'autre en quelques clics.<br />
+<br /><br />
+En cas de doute ou de problème, n'hésitez pas à contacter nos équipes.<br />
+<br />
+Pour nous contacter : contact.tabluuu@gmail.com ou 06 15 53 26 20<br />
+-- <br />
+TABLUUU<br />
+www.tabluuu.fr `;
+
+  const apiKey = process.env.BREVO_API_KEY;
+  const senderEmail = process.env.BREVO_SENDER_EMAIL;
+
+  // create calculated subject
+  const subject = `Bienvenue chez Tabluuu !`;
+  // send mail
+  sendEmailBrevo(
+    apiKey,
+    "Tabluuu.fr",
+    senderEmail,
+    etablissement.email_facturation,
+    etablissement.email_facturation,
+    subject,
+    html
+  );
+}
+
 module.exports = {
   sendReceipt,
   sendInvoiceNotif,
   sendEmailBrevo,
+  sendWelcomeMail,
 };
