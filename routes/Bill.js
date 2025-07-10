@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Bill, Etablissement } = require("../models");
+const { Bill, Etablissement, Session } = require("../models");
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 const auth = require("../middleware/auth.js");
@@ -59,9 +59,68 @@ router.get(
   }
 );
 
+// download
+router.get("/download/:id(\\d+)/:token", async (req, res, next) => {
+  // get bill
+  const bill = await Bill.findByPk(req.params.id);
+  if (!bill) return res.status(404).json({ erreur: "Non trouvé" });
+  if (!bill.filepath) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify token
+  const token = req.params.token;
+  const session = await Session.findOne({
+    where: {
+      token: token,
+    },
+  });
+  if (!session) {
+    res.status(401).json({ error: "Missing or invalid authentication token" });
+    return res;
+  }
+  if (session.role === "admin");
+  else if (session.role === "commercial");
+  else if (
+    session.role === "etablissement" &&
+    session.etablissement_id == bill.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // Rejeter tout chemin contenant des tentatives d’évasion
+  const filePathRaw = bill.filepath; // ex: images/panini.jpg
+  if (
+    filePathRaw.includes("..") ||
+    filePathRaw.includes("\\..") ||
+    filePathRaw.includes("/..")
+  ) {
+    return res.status(403).send("Access denied.");
+  }
+
+  // filePath
+  const resolvedPath = path.resolve(
+    process.env.UPLOAD_FILE_PATH,
+    bill.filepath
+  );
+
+  // Vérifie que le fichier existe
+  fs.access(resolvedPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).send("File not found.");
+    }
+
+    res.sendFile(resolvedPath, (err) => {
+      if (err) {
+        console.error("SendFile error:", err);
+        res.status(500).send("Error sending file.");
+      }
+    });
+  });
+});
+
 // pay
 router.patch("/setpaid/:id(\\d+)", auth, async (req, res, next) => {
-  // get menu
+  // get bill
   const bill = await Bill.findByPk(req.params.id);
   if (!bill) return res.status(404).json({ erreur: "Non trouvé" });
 
