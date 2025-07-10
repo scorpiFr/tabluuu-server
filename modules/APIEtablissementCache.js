@@ -29,6 +29,7 @@ class APIEtablissementCache {
       return null;
     }
     const cacheVarName = this.getCacheVarName(etablissementId);
+
     // action
     const res = this.fileCache.get(cacheVarName);
     // return

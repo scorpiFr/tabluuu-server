@@ -12,7 +12,7 @@ class FileCache {
   }
 
   getFilepath(cacheVarName) {
-    let hash = crypto.createHash("md5").update("some_string").digest("hex");
+    let hash = crypto.createHash("md5").update(cacheVarName).digest("hex");
     return this.absoluteCachePath + hash + ".txt";
   }
 
