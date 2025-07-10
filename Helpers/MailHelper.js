@@ -111,13 +111,11 @@ Nous vous souhaitons la bienvenue aux services de tabluuu.<br />
 Vous voudriez sans doute commencer par modifier votre carte de restaurant ? <br />
 Vous pouvez en vous connectant à votre compte sur admin.tabluuu.fr, et aller sur la rubrique "mes cartes".<br />
 Votre email : ${etablissement.email_facturation}<br />
-Votre mot de passe : ${newPassword}<br />
-<br />
+Votre mot de passe : <font style="color:red">${newPassword}</font><br />
 Car oui, tabluuu vous permet d'avoir plusieurs cartes : le midi, le soir, l'été, l'hiver, en happy hour, etc... <br />
 Vous pouvez switcher de l'une a l'autre en quelques clics.<br />
-<br /><br />
-En cas de doute ou de problème, n'hésitez pas à contacter nos équipes.<br />
 <br />
+En cas de doute ou de problème, n'hésitez pas à contacter nos équipes.<br />
 Pour nous contacter : contact.tabluuu@gmail.com ou 06 15 53 26 20<br />
 -- <br />
 TABLUUU<br />

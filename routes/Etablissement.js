@@ -441,7 +441,7 @@ router.get("/welcome/:id(\\d+)", auth, async (req, res, next) => {
       password: encryptPassword(password),
     };
     await Etablissement.update(updates, {
-      where: { id: req.params.id },
+      where: { id: etablissement.id },
     });
 
     // send welcome mail
