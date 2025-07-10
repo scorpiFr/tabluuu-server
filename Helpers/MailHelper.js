@@ -91,7 +91,7 @@ www.tabluuu.fr `;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
 
   // create calculated subject
-  const subject = `Recu pour la facture ${bill.id} .`;
+  const subject = `Recu pour votre paiement à Tabluuu - facture n° ${bill.id} .`;
   // send mail
   sendEmailBrevo(
     apiKey,
