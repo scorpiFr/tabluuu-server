@@ -18,24 +18,40 @@ const StaticItemRoutes = require("./routes/StaticItem");
 const StaticItemImageRoutes = require("./routes/StaticItemImage");
 const BillRoutes = require("./routes/Bill");
 
-// cors
-const allowedOrigins = ["https://www.tabluuu.fr", "https://admin.tabluuu.fr"];
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Autoriser les requêtes sans origin (ex: curl, Postman)
-      if (!origin) return callback(null, true);
+function corsAllowAll() {
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        callback(null, true); // tout autoriser
+      },
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      credentials: true,
+    })
+  );
+}
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-  })
-);
+function corsAllowRestrained() {
+  const allowedOrigins = ["https://www.tabluuu.fr", "https://admin.tabluuu.fr"];
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        // Autoriser les requêtes sans origin (ex: curl, Postman)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      credentials: true,
+    })
+  );
+}
+
+// cors
+corsAllowAll();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

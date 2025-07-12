@@ -251,11 +251,11 @@ router.post("/", auth, async (req, res, next) => {
   }
 
   // count max position
-  const [maxPosition, error2] = await getMaxPosition(menu.etablissement_id);
+  const [maxPosition, error2] = await getMaxPosition(menu.id);
   if (error2) {
     return res.status(500).json({ erreur: error2 });
   }
-
+  return res.status(201).json(maxPosition);
   // create
   const position = maxPosition > 0 ? maxPosition + 10 : 10;
   try {
