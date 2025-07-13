@@ -178,6 +178,7 @@ function renderDynamicData(etablissement, sections, items) {
                   price: item.prix,
                   image: item.image,
                   miniature: item.thumbnail,
+                  image_mode: item.image_mode,
                 };
               }) ?? [],
         };
