@@ -100,13 +100,13 @@ CREATE TABLE item (
 	position INT DEFAULT 0,
 	image VARCHAR(255) DEFAULT '',
 	thumbnail VARCHAR(255) DEFAULT '',
+	image_mode VARCHAR(255) DEFAULT '',
 	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_etablissementid ON item (etablissement_id);
 CREATE INDEX idx_dynmenuid ON item (dynamic_menu_id);
 CREATE INDEX idx_sectionid ON item (section_id);
-
 
 DROP TABLE static_menu;
 DROP INDEX idx_etablissementid ON static_menu;

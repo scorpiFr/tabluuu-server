@@ -14,6 +14,7 @@ const {
   is_allowedImageExtention,
   deleteFile,
 } = require("../Helpers/ImageHelper.js");
+const { getNowTimestamp } = require("../Helpers/BillHelper.js");
 const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 // Update image
@@ -84,21 +85,30 @@ router.patch(
       if (item.thumbnail.length > 0) {
         deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
         item.thumbnail = "";
+        item.image_mode = "";
       }
 
       // set real image
-      const relativeTargetPath = path.join(relativeTargetDir, originalName);
-      const absoluteTargetPath = path.join(absoluteTargetDir, originalName);
+      const nowTimestamp = getNowTimestamp();
+      const imageName = nowTimestamp + "-" + originalName;
+      const relativeTargetPath = path.join(relativeTargetDir, imageName);
+      const absoluteTargetPath = path.join(absoluteTargetDir, imageName);
       resizeImage(tempPath, absoluteTargetPath, 600, 1000);
       item.image = relativeTargetPath;
 
       // set thumbnail
       const extension = path.extname(originalName); // .jpg
       const filenameWithoutExt = path.basename(originalName, extension);
-      const thumbName = filenameWithoutExt + "-thumb" + extension;
+      const thumbName =
+        nowTimestamp + "-" + filenameWithoutExt + "-thumb" + extension;
       const relativeTargetPathThumb = path.join(relativeTargetDir, thumbName);
       const absoluteTargetPathThumb = path.join(absoluteTargetDir, thumbName);
-      resizeImage(tempPath, absoluteTargetPathThumb, 50, 50);
+      item.image_mode = await resizeImage(
+        tempPath,
+        absoluteTargetPathThumb,
+        100,
+        100
+      );
       item.thumbnail = relativeTargetPathThumb;
 
       // update item

@@ -347,12 +347,12 @@ router.patch("/removeimage/:id(\\d+)", auth, async (req, res, next) => {
     if (item.thumbnail.length > 0) {
       deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
       item.thumbnail = "";
+      item.image_mode = "";
       flagChanged = true;
     }
-    // save item
+    // save item & empty cache
     if (flagChanged) {
       item.save();
-      // empty cache
       emtyEtablissementCache(item.etablissement_id);
     }
     // return

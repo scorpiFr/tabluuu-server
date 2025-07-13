@@ -21,7 +21,9 @@ function getTodayDateUS() {
 
   return `${year}-${month}-${day}`;
 }
-
+function getNowTimestamp() {
+  return Math.floor(Date.now() / 1000);
+}
 /*
 const data = {
       etablissement_id,
@@ -152,4 +154,5 @@ module.exports = {
   getTodayDateFR,
   getTodayDateUS,
   generateInvoice,
+  getNowTimestamp,
 };

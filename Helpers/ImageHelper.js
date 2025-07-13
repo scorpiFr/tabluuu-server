@@ -41,6 +41,9 @@ async function resizeImage(
     const inputBuffer = await fs2.readFile(imageSourcePath);
     // get image size
     const metadata = await sharp(inputBuffer).metadata();
+    // image mode
+    const imageMode =
+      metadata.width > metadata.height ? "horizontal" : "vertical";
     // verif
     const ratio = getImageResizeRatio(
       metadata.width,
@@ -51,7 +54,7 @@ async function resizeImage(
     // no resize need => save
     if (!ratio) {
       await fs2.writeFile(imageDestPath, inputBuffer);
-      return;
+      return imageMode;
     }
     // resize
     const resizedWidth = Math.round(metadata.width * ratio);
@@ -61,8 +64,11 @@ async function resizeImage(
       .toBuffer();
     // save
     await fs2.writeFile(imageDestPath, outputBuffer);
+    // return
+    return imageMode;
   } catch (err) {
     console.error("❌ Erreur :", err.message);
+    return "";
   }
 }
 
