@@ -88,10 +88,13 @@ async function checkPaypalOrder(paypal_order_id) {
     }
 
     // status COMPLETED (paid)
-    if (paypal_order_status === "COMPLETED") {
+    if (
+      paypal_order_status === "COMPLETED" ||
+      paypal_order_status === "APPROVED"
+    ) {
       const res = await capturePayment(token, paypal_order_id);
       return {
-        paypal_order_status,
+        paypal_order_status: "COMPLETED",
         paypal_payment_id: res.paymentId,
         paypal_payer_id: res.buyerId,
         paypal_payer_email: res.buyerEmail,

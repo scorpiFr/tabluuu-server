@@ -282,6 +282,60 @@ router.get("/checkpaypalorder/:id(\\d+)", auth, async (req, res, next) => {
   }
 });
 
+// check paypal order
+router.get("/checkpaypalorderbypaypalid/:paypalid", async (req, res, next) => {
+  // get bill
+  const bill = await Bill.findOne({
+    where: { paypal_order_id: req.params.paypalid },
+  });
+  if (!bill) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // facture traitée
+  if (bill.status != "created") {
+    return res.status(200).json({ status: bill.status });
+  }
+  // order not set on paypal
+  if (!bill.paypal_order_id.length) {
+    return res.status(200).json({ status: "order not set on paypal" });
+  }
+
+  try {
+    // check order
+    const {
+      paypal_order_status,
+      paypal_payment_id,
+      paypal_payer_id,
+      paypal_payer_email,
+      paypal_date_payment,
+    } = await checkPaypalOrder(bill.paypal_order_id);
+
+    if (paypal_order_status === "CREATED") {
+      return res.status(200).json({ status: "created" });
+    }
+    if (paypal_order_status === "COMPLETED") {
+      // save bill infos
+      bill.status = "paid";
+      bill.paypal_payment_id = paypal_payment_id;
+      if (paypal_date_payment.length > 0) {
+        bill.date_payment = paypal_date_payment;
+      }
+      bill.paypal_payer_id = paypal_payer_id;
+      bill.paypal_payer_email = paypal_payer_email;
+      await bill.save();
+      // send receipt
+      const etablissement = await Etablissement.findByPk(bill.etablissement_id);
+      sendReceipt(bill, etablissement);
+      // return
+      return res.status(201).json({ status: "paid" });
+    }
+
+    // return
+    return res.status(201).json({ status: "created" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // create
 router.post("/", auth, async (req, res, next) => {
   // verify session
