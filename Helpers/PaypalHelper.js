@@ -2,7 +2,7 @@ const axios = require("axios");
 require("dotenv").config();
 const FileCache = require("../modules/FileCache.js");
 
-const PAYPAL_API_URL_BASE = "https://api-m.sandbox.paypal.com"; // Sandbox (change en prod)
+const PAYPAL_API_URL_BASE = "https://api-m.paypal.com"; // Sandbox (change en prod)
 const paypalAppId = process.env.PAYPAL_APP_ID;
 const paypalAppSecret = process.env.PAYPAL_APP_SECRET;
 const paypalTokenUrl = PAYPAL_API_URL_BASE + "/v1/oauth2/token";
