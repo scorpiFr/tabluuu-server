@@ -171,7 +171,7 @@ async function getPayPalAccessToken() {
   const fileCache = new FileCache();
   const cacheVarName = "paypalToken";
   const now = Date.now();
-  let paypalAccessToken = null;
+  let accessToken = null;
   let tokenExpiration = null;
 
   // get from cache
