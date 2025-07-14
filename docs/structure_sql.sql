@@ -159,6 +159,7 @@ is_available=1;
 */
 
 DROP INDEX idx_etablissementid ON bill;
+DROP INDEX idx_paypal_order_id ON bill;
 DROP TABLE bill;
 CREATE TABLE bill (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -174,10 +175,16 @@ CREATE TABLE bill (
 	qr_board_quantity INT DEFAULT 0,
 	qr_board_unit_price DECIMAL(10, 2) DEFAULT 0,
 	menu_edit_amount DECIMAL(10, 2) DEFAULT 0,
+	paypal_order_id VARCHAR(255) DEFAULT '',
+	paypal_approve_link VARCHAR(255) DEFAULT '',	
+	paypal_payment_id VARCHAR(255) DEFAULT '',
+	paypal_payer_id VARCHAR(255) DEFAULT '',
+	paypal_payer_email VARCHAR(255) DEFAULT '',
 	createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_etablissementid ON bill (etablissement_id);
+CREATE INDEX idx_paypal_order_id ON bill (paypal_order_id);
 
 /*
 Bill status : pending, created, paid, inactive 

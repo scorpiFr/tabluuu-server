@@ -59,6 +59,26 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0,
       },
+      paypal_order_id: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
+      paypal_approve_link: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
+      paypal_payment_id: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
+      paypal_payer_id: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
+      paypal_payer_email: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

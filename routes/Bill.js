@@ -13,6 +13,12 @@ const {
   generateInvoice,
 } = require("../Helpers/BillHelper.js");
 const { sendInvoiceNotif, sendReceipt } = require("../Helpers/MailHelper.js");
+const {
+  paypalReadOrderUrl,
+  getPayPalAccessToken,
+  createPaypalOrder,
+  checkPaypalOrder,
+} = require("../Helpers/PaypalHelper.js");
 
 function isStrictDecimal(str) {
   return /^(-?\d+(\.\d+)?|-?\.\d+)$/.test(str);
@@ -151,13 +157,126 @@ router.patch("/setpaid/:id(\\d+)", auth, async (req, res, next) => {
     bill.date_payment = getTodayDateUS();
     bill.status = "paid";
     await bill.save();
-    console.log("bill saved");
     // send receipt
     const etablissement = await Etablissement.findByPk(bill.etablissement_id);
     sendReceipt(bill, etablissement);
 
     // return
     res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// getpaypal link
+router.get("/getpaypalapprovelink/:id(\\d+)", auth, async (req, res, next) => {
+  // get bill
+  const bill = await Bill.findByPk(req.params.id);
+  if (!bill) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == bill.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  if (bill.status != "created") {
+    return res.status(200).json({ link: null });
+  }
+
+  if (bill.paypal_approve_link) {
+    return res.status(200).json({
+      link: bill.paypal_approve_link,
+    });
+  }
+  // create order
+  const { id, approveLink } = await createPaypalOrder(bill.amount);
+
+  // save bill
+  bill.paypal_approve_link = approveLink;
+  bill.paypal_order_id = id;
+  bill.save();
+
+  // return
+  return res.status(201).json({ link: approveLink });
+
+  try {
+    // return
+    res.status(201).json({ link: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// check paypal order
+router.get("/checkpaypalorder/:id(\\d+)", auth, async (req, res, next) => {
+  // get bill
+  const bill = await Bill.findByPk(req.params.id);
+  if (!bill) return res.status(404).json({ erreur: "Non trouvé" });
+
+  // verify session
+  if (!req.Session) {
+    return res.status(401).json({ erreur: "Bad auth token" });
+  }
+  if (req.Session.role === "admin");
+  else if (req.Session.role === "commercial");
+  else if (
+    req.Session.role === "etablissement" &&
+    req.Session.etablissement_id == bill.etablissement_id
+  );
+  else {
+    return res.status(403).json({ erreur: "Forbidden" });
+  }
+
+  // facture traitée
+  if (bill.status != "created") {
+    return res.status(200).json({ status: bill.status });
+  }
+  // order not set on paypal
+  if (!bill.paypal_order_id.length) {
+    return res.status(200).json({ status: "order not set on paypal" });
+  }
+
+  try {
+    // check order
+    const {
+      paypal_order_status,
+      paypal_payment_id,
+      paypal_payer_id,
+      paypal_payer_email,
+      paypal_date_payment,
+    } = await checkPaypalOrder(bill.paypal_order_id);
+
+    if (paypal_order_status === "CREATED") {
+      return res.status(200).json({ status: "created" });
+    }
+    if (paypal_order_status === "COMPLETED") {
+      // save bill infos
+      bill.status = "paid";
+      bill.paypal_payment_id = paypal_payment_id;
+      if (paypal_date_payment.length > 0) {
+        bill.date_payment = paypal_date_payment;
+      }
+      bill.paypal_payer_id = paypal_payer_id;
+      bill.paypal_payer_email = paypal_payer_email;
+      await bill.save();
+      // send receipt
+      const etablissement = await Etablissement.findByPk(bill.etablissement_id);
+      sendReceipt(bill, etablissement);
+      // return
+      return res.status(201).json({ status: "paid" });
+    }
+
+    // return
+    return res.status(201).json({ status: "created" });
   } catch (err) {
     next(err);
   }
