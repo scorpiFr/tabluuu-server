@@ -197,20 +197,17 @@ router.get("/getpaypalapprovelink/:id(\\d+)", auth, async (req, res, next) => {
       link: bill.paypal_approve_link,
     });
   }
-  // create order
-  const { id, approveLink } = await createPaypalOrder(bill.amount);
-
-  // save bill
-  bill.paypal_approve_link = approveLink;
-  bill.paypal_order_id = id;
-  bill.save();
-
-  // return
-  return res.status(201).json({ link: approveLink });
 
   try {
+    // create order
+    const { id, approveLink } = await createPaypalOrder(bill.amount);
+
+    // save bill
+    bill.paypal_approve_link = approveLink;
+    bill.paypal_order_id = id;
+    bill.save();
     // return
-    res.status(201).json({ link: null });
+    res.status(200).json({ link: approveLink });
   } catch (err) {
     next(err);
   }
