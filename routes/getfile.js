@@ -135,7 +135,7 @@ router.get("/getqrcode", async (req, res) => {
   // Chemin du dossier et du fichier
   const dirPath = path.join(BASE_DIR, `${barid}/QrCodes/`);
   const fileName = `${table}.png`;
-  const pdfName = `${table}.pdf`;
+  const pdfName = `${barid}_${table}.pdf`;
   const filePath = path.join(dirPath, fileName);
   const pdfFilePath = path.join(dirPath, pdfName);
 
