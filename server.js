@@ -17,6 +17,7 @@ const StaticmenuRoutes = require("./routes/Staticmenu");
 const StaticItemRoutes = require("./routes/StaticItem");
 const StaticItemImageRoutes = require("./routes/StaticItemImage");
 const BillRoutes = require("./routes/Bill");
+const MenuIO = require("./routes/MenuIO");
 
 function corsAllowAll() {
   app.use(
@@ -69,6 +70,7 @@ app.use("/admin/staticmenu", StaticmenuRoutes);
 app.use("/admin/staticitem", StaticItemRoutes);
 app.use("/admin/staticitem", StaticItemImageRoutes);
 app.use("/admin/bill", BillRoutes);
+app.use("/admin/menu", MenuIO);
 
 // gestion des erreurs
 const errorHandler = require("./middleware/errorHandler");
