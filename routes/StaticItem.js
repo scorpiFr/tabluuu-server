@@ -7,7 +7,7 @@ const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 
 const auth = require("../middleware/auth.js");
-const { deleteFile } = require("../Helpers/ImageHelper.js");
+const { removeImageOnItem } = require("../Helpers/ImageHelper.js");
 const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 // LIST
@@ -160,15 +160,7 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // delete image
-    if (item.image.length > 0) {
-      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.image);
-      item.image = "";
-    }
-    // delete thumbnail
-    if (item.thumbnail.length > 0) {
-      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
-      item.thumbnail = "";
-    }
+    removeImageOnItem(item);
     // empty cache
     emtyEtablissementCache(item.etablissement_id);
     // delete

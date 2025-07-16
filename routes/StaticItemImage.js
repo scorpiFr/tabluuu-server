@@ -13,6 +13,7 @@ const {
   resizeImage,
   is_allowedImageExtention,
   deleteFile,
+  addImageOnStaticItem,
 } = require("../Helpers/ImageHelper.js");
 const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
@@ -84,55 +85,31 @@ router.post("/", auth, upload.single("image"), async (req, res, next) => {
   const position = maxPosition > 0 ? maxPosition + 10 : 10;
 
   try {
-    // inits
-    const relativeTargetDir = menu.etablissement_id + "/images";
-    const absoluteTargetDir = path.join(
-      process.env.UPLOAD_FILE_PATH + "/" + relativeTargetDir
-    );
-
-    // verify extention
-    const originalName = req.file.originalname;
-    if (originalName.length > 200) {
-      fs.unlink(tempPath, (err) => {});
-      return res.status(400).json({
-        error: "Filename too long (200 char max) : " + originalName,
-      });
-    }
-    if (!is_allowedImageExtention(tempPath, originalName)) {
-      fs.unlink(tempPath, (err) => {});
-      return res.status(400).json({ error: "Forbidden mimetype" });
-    }
-
-    // create dir if not exists
-    if (!fs.existsSync(absoluteTargetDir)) {
-      fs.mkdirSync(absoluteTargetDir, { recursive: true });
-    }
-
-    // set real image
-    const relativeTargetPath = path.join(relativeTargetDir, originalName);
-    const absoluteTargetPath = path.join(absoluteTargetDir, originalName);
-    resizeImage(tempPath, absoluteTargetPath, 600, 1000);
-    const image = relativeTargetPath;
-
-    // set thumbnail
-    const extension = path.extname(originalName); // .jpg
-    const filenameWithoutExt = path.basename(originalName, extension);
-    const thumbName = filenameWithoutExt + "-thumb" + extension;
-    const relativeTargetPathThumb = path.join(relativeTargetDir, thumbName);
-    const absoluteTargetPathThumb = path.join(absoluteTargetDir, thumbName);
-    resizeImage(tempPath, absoluteTargetPathThumb, 100, 100);
-    const thumbnail = relativeTargetPathThumb;
-
-    // create
+    // create item
     const created = await StaticItem.create({
       etablissement_id: menu.etablissement_id,
       static_menu_id: menu.id,
       position,
-      image,
-      thumbnail,
     });
     // empty cache
     emtyEtablissementCache(menu.etablissement_id);
+
+    // add image
+    const originalName = req.file.originalname;
+    const { httpCode, errorMsg } = await addImageOnStaticItem(
+      tempPath,
+      created,
+      originalName
+    );
+    if (httpCode !== 200) {
+      fs.unlink(tempPath, (err) => {});
+      return res.status(httpCode).json({
+        error: errorMsg,
+      });
+    }
+    // empty cache
+    emtyEtablissementCache(menu.etablissement_id);
+
     // return
     res.status(201).json(created);
   } catch (err) {

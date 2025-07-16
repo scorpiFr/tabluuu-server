@@ -106,9 +106,105 @@ function deleteFile(filePath) {
   });
 }
 
+async function addImageOnAbstractItem(
+  srcPath,
+  item,
+  imageMaxWidth,
+  imageMaxHeight,
+  thumbnailMaxWidth,
+  thumbnailMaxHeight,
+  originalName = ""
+) {
+  // verifs
+  if (!originalName || !originalName.length) {
+    originalName = path.basename(srcPath);
+  }
+
+  // inits
+  const relativeTargetDir = item.etablissement_id + "/images";
+  const absoluteTargetDir = path.join(
+    process.env.UPLOAD_FILE_PATH + "/" + relativeTargetDir
+  );
+
+  // verify extention
+  if (originalName.length > 200) {
+    return {
+      httpCode: 400,
+      errorMsg: "Filename too long (200 char max) : " + originalName,
+    };
+  }
+
+  if (!is_allowedImageExtention(srcPath, originalName)) {
+    return {
+      httpCode: 400,
+      errorMsg: "Forbidden mimetype",
+    };
+  }
+
+  // create dir if not exists
+  if (!fs.existsSync(absoluteTargetDir)) {
+    fs.mkdirSync(absoluteTargetDir, { recursive: true });
+  }
+
+  // set real image
+  const relativeTargetPath = path.join(relativeTargetDir, originalName);
+  const absoluteTargetPath = path.join(absoluteTargetDir, originalName);
+  resizeImage(srcPath, absoluteTargetPath, 600, 1000);
+  item.image = relativeTargetPath;
+
+  // set thumbnail
+  const extension = path.extname(originalName); // .jpg
+  const filenameWithoutExt = path.basename(originalName, extension);
+  const thumbName = filenameWithoutExt + "-thumb" + extension;
+  const relativeTargetPathThumb = path.join(relativeTargetDir, thumbName);
+  const absoluteTargetPathThumb = path.join(absoluteTargetDir, thumbName);
+  resizeImage(srcPath, absoluteTargetPathThumb, 100, 100);
+  item.thumbnail = relativeTargetPathThumb;
+
+  // save item
+  item.save();
+
+  // return
+  return { httpCode: 200, errorMsg: "" };
+}
+
+async function addImageOnStaticItem(srcPath, staticItem, originalName = "") {
+  return await addImageOnAbstractItem(
+    srcPath,
+    staticItem,
+    600,
+    1000,
+    100,
+    100,
+    originalName
+  );
+}
+
+async function removeImageOnItem(item) {
+  let flag = false;
+  // delete image
+  if (item.image.length > 0) {
+    deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.image);
+    item.image = "";
+    flag = true;
+  }
+  // delete thumbnail
+  if (item.thumbnail.length > 0) {
+    deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
+    item.thumbnail = "";
+    flag = true;
+  }
+  // save item
+  if (flag === true) {
+    await item.save();
+  }
+}
+
 module.exports = {
   getImageResizeRatio,
   resizeImage,
   is_allowedImageExtention,
   deleteFile,
+  addImageOnStaticItem,
+  removeImageOnItem,
 };
