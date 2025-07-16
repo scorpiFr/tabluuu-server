@@ -97,7 +97,6 @@ async function createQrPdf(imagePath, outputPdfPath) {
   const dimensions = await sharp(imageBuffer).metadata();
   const dpi = dimensions.density || 72; // Par défaut, on suppose 72 DPI s'il n'est pas défini
 
-  console.log("Density", dimensions.density);
   const widthPt = (dimensions.width / dpi) * 72;
   const heightPt = (dimensions.height / dpi) * 72;
 
@@ -112,13 +111,12 @@ async function createQrPdf(imagePath, outputPdfPath) {
     throw new Error("Image non supportée. Utilisez PNG ou JPG.");
   }
 
-  console.log(dimensions.density, widthPt, heightPt);
   const page = pdfDoc.addPage([widthPt, heightPt]);
   page.drawImage(image, {
     x: 0,
     y: 0,
-    width: widthPt, // 209.7, // or widthPt
-    height: heightPt, // 297.6, // or heightPt
+    width: widthPt, // or 209.7
+    height: heightPt, // or 297.6
   });
 
   const pdfBytes = await pdfDoc.save();
