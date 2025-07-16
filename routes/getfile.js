@@ -1,13 +1,16 @@
 require("dotenv").config();
 const express = require("express");
+const { createCanvas, loadImage } = require("canvas");
+const { PDFDocument, rgb } = require("pdf-lib");
+const sharp = require("sharp");
 const router = express.Router();
+
 const { Test } = require("../models");
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 const path = require("path");
 const fs = require("fs");
 const QRCode = require("qrcode");
-const { createCanvas, loadImage } = require("canvas");
 
 // Dossier racine autorisé
 const BASE_DIR = path.resolve(process.env.UPLOAD_FILE_PATH);
@@ -54,14 +57,14 @@ router.get("/getFile", (req, res) => {
 });
 
 //-----------------------------------------------------------
-function generateQrMenu(barid, table) {
+async function generateQrMenu(barid, table) {
   const proforma_menu = path.resolve(PUBLIC_DIR, "proforma-menu-kebab.png");
-  return generateQrImage(proforma_menu, barid, table);
+  return await generateQrImage(proforma_menu, barid, table);
 }
 
-function generateQrCarte(barid, table) {
+async function generateQrCarte(barid, table) {
   const proforma_menu = path.resolve(PUBLIC_DIR, "proforma-carte-bar.png");
-  return generateQrImage(proforma_menu, barid, table);
+  return await generateQrImage(proforma_menu, barid, table);
 }
 
 async function generateQrImage(proformaPath, barid, table) {
@@ -87,6 +90,41 @@ async function generateQrImage(proformaPath, barid, table) {
   return canvas;
 }
 
+async function createQrPdf(imagePath, outputPdfPath) {
+  const imageBuffer = fs.readFileSync(imagePath);
+  const extension = path.extname(imagePath).toLowerCase();
+
+  const dimensions = await sharp(imageBuffer).metadata();
+  const dpi = dimensions.density || 72; // Par défaut, on suppose 72 DPI s'il n'est pas défini
+
+  console.log("Density", dimensions.density);
+  const widthPt = (dimensions.width / dpi) * 72;
+  const heightPt = (dimensions.height / dpi) * 72;
+
+  const pdfDoc = await PDFDocument.create();
+
+  let image;
+  if (extension === ".png") {
+    image = await pdfDoc.embedPng(imageBuffer);
+  } else if (extension === ".jpg" || extension === ".jpeg") {
+    image = await pdfDoc.embedJpg(imageBuffer);
+  } else {
+    throw new Error("Image non supportée. Utilisez PNG ou JPG.");
+  }
+
+  console.log(dimensions.density, widthPt, heightPt);
+  const page = pdfDoc.addPage([widthPt, heightPt]);
+  page.drawImage(image, {
+    x: 0,
+    y: 0,
+    width: widthPt, // 209.7, // or widthPt
+    height: heightPt, // 297.6, // or heightPt
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  fs.writeFileSync(outputPdfPath, pdfBytes);
+}
+
 router.get("/getqrcode", async (req, res) => {
   const barid = req.query.barid;
   const table = req.query.table;
@@ -98,8 +136,10 @@ router.get("/getqrcode", async (req, res) => {
 
   // Chemin du dossier et du fichier
   const dirPath = path.join(BASE_DIR, `${barid}/QrCodes/`);
-  const fileName = `${table}.jpg`;
+  const fileName = `${table}.png`;
+  const pdfName = `${table}.pdf`;
   const filePath = path.join(dirPath, fileName);
+  const pdfFilePath = path.join(dirPath, pdfName);
 
   // Vérifier si le fichier existe
   fs.access(filePath, fs.constants.F_OK, async (err) => {
@@ -121,13 +161,16 @@ router.get("/getqrcode", async (req, res) => {
       } else {
         canvas = await generateQrMenu(barid, table);
       }
-      const buffer = canvas.toBuffer("image/png");
+      // sauvegarde, pdf & retour
+      if (canvas) {
+        const buffer = canvas.toBuffer("image/png");
+        fs.writeFileSync(filePath, buffer);
+        await createQrPdf(filePath, pdfFilePath);
+        return res.sendFile(filePath);
+      }
 
       // Sauvegarde
-      fs.writeFileSync(filePath, buffer);
-
-      // Sauvegarde
-      return res.sendFile(filePath);
+      return res.status(500).send("Erreur serveur");
     } catch (error) {
       console.error("Erreur dans la génération du QR code:", error);
       return res.status(500).send("Erreur serveur");
