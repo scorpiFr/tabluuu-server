@@ -7,7 +7,10 @@ const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 
 const auth = require("../middleware/auth.js");
-const { deleteFile } = require("../Helpers/ImageHelper.js");
+const {
+  removeImageOnItem,
+  addImageOnItem,
+} = require("../Helpers/ImageHelper.js");
 const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 async function getMaxPosition(sectionId) {
@@ -297,15 +300,7 @@ router.delete("/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // delete image
-    if (item.image.length > 0) {
-      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.image);
-      item.image = "";
-    }
-    // delete thumbnail
-    if (item.thumbnail.length > 0) {
-      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
-      item.thumbnail = "";
-    }
+    removeImageOnItem(item);
     // empty cache
     emtyEtablissementCache(item.etablissement_id);
     // delete
@@ -338,25 +333,11 @@ router.patch("/removeimage/:id(\\d+)", auth, async (req, res, next) => {
 
   try {
     // delete old images
-    let flagChanged = false;
-    if (item.image.length > 0) {
-      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.image);
-      item.image = "";
-      flagChanged = true;
-    }
-    if (item.thumbnail.length > 0) {
-      deleteFile(process.env.UPLOAD_FILE_PATH + "/" + item.thumbnail);
-      item.thumbnail = "";
-      item.image_mode = "";
-      flagChanged = true;
-    }
-    // save item & empty cache
-    if (flagChanged) {
-      item.save();
-      emtyEtablissementCache(item.etablissement_id);
-    }
+    const newItem = await removeImageOnItem(item);
+    // empty cache
+    emtyEtablissementCache(item.etablissement_id);
     // return
-    res.status(200).json(item);
+    res.status(200).json(newItem);
   } catch (err) {
     next(err);
   }

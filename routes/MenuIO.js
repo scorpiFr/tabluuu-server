@@ -215,15 +215,12 @@ async function createStaticItem(etablissementId, staticMenuId, fields) {
 
 async function createItem(etablissementId, dynamicMenuId, sectionId, fields) {
   // verify inputs
-  // item;\"kebab classic\";\"\";5.10;20;\"\";;\n
   // `item;"${item.nom}";"${item.description}";${item.prix};${item.position};"${item.image}";${item.image_mode};`;
-
   let nom = fields.at(1);
   nom = nom.replace(/^\\\"+|\\"+$/g, "");
   let description = fields.at(2);
   description = description.replace(/^\\\"+|\\"+$/g, "");
   let prix = parseFloat(fields.at(3));
-  console.log("---- item-prix : " + prix);
   const position = fields.at(4);
 
   let image = fields.at(5); // \"C:/images/1/images/menu1.jpg\";\n
@@ -374,7 +371,7 @@ router.post("/:etabid(\\d+)", auth, upload.none(), async (req, res, next) => {
         const staticMenu = await createStaticMenu(etablissementId, fields);
         staticMenuId = staticMenu.id;
       } else if (fields.at(0) === "static_item") {
-        await createStaticItem(etablissementId, staticMenuId, fields);
+        createStaticItem(etablissementId, staticMenuId, fields);
       } else if (fields.at(0) === "dynamic_menu") {
         const dynamicMenu = await createDynamicMenu(etablissementId, fields);
         dynamicMenuId = dynamicMenu.id;
@@ -386,7 +383,7 @@ router.post("/:etabid(\\d+)", auth, upload.none(), async (req, res, next) => {
         );
         sectionId = section.id;
       } else if (fields.at(0) === "item") {
-        await createItem(etablissementId, dynamicMenuId, sectionId, fields);
+        createItem(etablissementId, dynamicMenuId, sectionId, fields);
       }
     }
     // empty cache

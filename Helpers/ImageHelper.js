@@ -218,6 +218,8 @@ async function removeImageOnItem(item) {
   if (flag === true) {
     await item.save();
   }
+  // return;
+  return item;
 }
 
 module.exports = {
