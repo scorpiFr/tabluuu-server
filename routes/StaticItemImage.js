@@ -96,11 +96,11 @@ router.post("/", auth, upload.single("image"), async (req, res, next) => {
 
     // add image
     const originalName = req.file.originalname;
-    const { httpCode, errorMsg } = await addImageOnStaticItem(
-      tempPath,
-      created,
-      originalName
-    );
+    const {
+      created: item,
+      httpCode,
+      errorMsg,
+    } = await addImageOnStaticItem(tempPath, created, originalName);
     if (httpCode !== 200) {
       fs.unlink(tempPath, (err) => {});
       return res.status(httpCode).json({

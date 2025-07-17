@@ -13,7 +13,10 @@ const {
 const multer = require("multer");
 const upload = multer(); // pas de stockage, en mémoire
 const auth = require("../middleware/auth.js");
-const { addImageOnStaticItem } = require("../Helpers/ImageHelper.js");
+const {
+  addImageOnStaticItem,
+  addImageOnItem,
+} = require("../Helpers/ImageHelper.js");
 const { emtyEtablissementCache } = require("../modules/APIEtablissementCache");
 
 async function getItems(etablissement_id) {
@@ -107,8 +110,30 @@ async function cleanMenus(etablissementId) {
       type: sequelize.QueryTypes.DELETE,
     }
   );
-
-  // sequelize.query("DELETE FROM `session` WHERE `max_timestamp` < NOW()");
+  // dynamic menu
+  await sequelize.query(
+    "DELETE FROM dynamic_menu WHERE etablissement_id = :etablissementId",
+    {
+      replacements: { etablissementId: etablissementId },
+      type: sequelize.QueryTypes.DELETE,
+    }
+  );
+  // section
+  await sequelize.query(
+    "DELETE FROM section WHERE etablissement_id = :etablissementId",
+    {
+      replacements: { etablissementId: etablissementId },
+      type: sequelize.QueryTypes.DELETE,
+    }
+  );
+  // item
+  await sequelize.query(
+    "DELETE FROM item WHERE etablissement_id = :etablissementId",
+    {
+      replacements: { etablissementId: etablissementId },
+      type: sequelize.QueryTypes.DELETE,
+    }
+  );
 }
 
 async function createStaticMenu(etablissementId, fields) {
@@ -124,6 +149,39 @@ async function createStaticMenu(etablissementId, fields) {
     position,
   };
   const res = await Staticmenu.create(inputs);
+
+  return res;
+}
+
+async function createDynamicMenu(etablissementId, fields) {
+  let nom = fields.at(1); //  '\\"test2\\"', '30', '0'
+  nom = nom.replace(/^\\\"+|\\"+$/g, "");
+  const position = parseInt(fields.at(2)) ?? 0;
+  const isActive = fields.at(3) === "0" ? 0 : 1;
+
+  const inputs = {
+    etablissement_id: etablissementId,
+    nom,
+    is_active: isActive,
+    position,
+  };
+  const res = await Dynamicmenu.create(inputs);
+
+  return res;
+}
+
+async function createSection(etablissementId, dynamicMenuId, fields) {
+  let nom = fields.at(1); //  \"Menus\";10;
+  nom = nom.replace(/^\\\"+|\\"+$/g, "");
+  const position = parseInt(fields.at(2)) ?? 0;
+
+  const inputs = {
+    etablissement_id: etablissementId,
+    dynamic_menu_id: dynamicMenuId,
+    nom,
+    position,
+  };
+  const res = await Section.create(inputs);
 
   return res;
 }
@@ -144,7 +202,52 @@ async function createStaticItem(etablissementId, staticMenuId, fields) {
 
   // create images
   if (image && image.length > 0) {
-    const { httpCode, errorMsg } = await addImageOnStaticItem(image, created);
+    const {
+      created: item,
+      httpCode,
+      errorMsg,
+    } = await addImageOnStaticItem(image, created);
+  }
+
+  // return
+  return created;
+}
+
+async function createItem(etablissementId, dynamicMenuId, sectionId, fields) {
+  // verify inputs
+  // item;\"kebab classic\";\"\";5.10;20;\"\";;\n
+  // `item;"${item.nom}";"${item.description}";${item.prix};${item.position};"${item.image}";${item.image_mode};`;
+
+  let nom = fields.at(1);
+  nom = nom.replace(/^\\\"+|\\"+$/g, "");
+  let description = fields.at(2);
+  description = description.replace(/^\\\"+|\\"+$/g, "");
+  let prix = parseFloat(fields.at(3));
+  console.log("---- item-prix : " + prix);
+  const position = fields.at(4);
+
+  let image = fields.at(5); // \"C:/images/1/images/menu1.jpg\";\n
+  image = image.replace(/^\\\"+|\\"+$/g, "");
+
+  // create item
+  const inputs = {
+    etablissement_id: etablissementId,
+    dynamic_menu_id: dynamicMenuId,
+    section_id: sectionId,
+    nom,
+    description,
+    prix,
+    position,
+  };
+  const created = await Item.create(inputs);
+
+  // create images
+  if (image && image.length > 0) {
+    const {
+      created: item,
+      httpCode,
+      errorMsg,
+    } = await addImageOnItem(image, created);
   }
 
   // return
@@ -264,15 +367,28 @@ router.post("/:etabid(\\d+)", auth, upload.none(), async (req, res, next) => {
     }
     await cleanMenus(etablissementId);
 
-    lines.forEach(async function (line) {
+    for (let cpt1 = 0; cpt1 < lines.length; cpt1++) {
+      const line = lines.at(cpt1);
       const fields = line.split(";");
       if (fields.at(0) === "static_menu") {
         const staticMenu = await createStaticMenu(etablissementId, fields);
         staticMenuId = staticMenu.id;
       } else if (fields.at(0) === "static_item") {
-        createStaticItem(etablissementId, staticMenuId, fields);
+        await createStaticItem(etablissementId, staticMenuId, fields);
+      } else if (fields.at(0) === "dynamic_menu") {
+        const dynamicMenu = await createDynamicMenu(etablissementId, fields);
+        dynamicMenuId = dynamicMenu.id;
+      } else if (fields.at(0) === "section") {
+        const section = await createSection(
+          etablissementId,
+          dynamicMenuId,
+          fields
+        );
+        sectionId = section.id;
+      } else if (fields.at(0) === "item") {
+        await createItem(etablissementId, dynamicMenuId, sectionId, fields);
       }
-    });
+    }
     // empty cache
     emtyEtablissementCache(etablissementId);
     // return

@@ -78,7 +78,6 @@ router.post("/login", upload.none(), async (req, res) => {
   }
   // get password hash
   const passwordHash = encryptPassword(password);
-  console.log("pwd : ", password, "passwordHash : ", passwordHash);
   try {
     // search from etablissement
     let session = await getSessionFromEtablissement(email, passwordHash);

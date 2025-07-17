@@ -113,7 +113,8 @@ async function addImageOnAbstractItem(
   imageMaxHeight,
   thumbnailMaxWidth,
   thumbnailMaxHeight,
-  originalName = ""
+  originalName = "",
+  isImageMode = false
 ) {
   // verifs
   if (!originalName || !originalName.length) {
@@ -129,6 +130,7 @@ async function addImageOnAbstractItem(
   // verify extention
   if (originalName.length > 200) {
     return {
+      item,
       httpCode: 400,
       errorMsg: "Filename too long (200 char max) : " + originalName,
     };
@@ -136,6 +138,7 @@ async function addImageOnAbstractItem(
 
   if (!is_allowedImageExtention(srcPath, originalName)) {
     return {
+      item,
       httpCode: 400,
       errorMsg: "Forbidden mimetype",
     };
@@ -149,7 +152,7 @@ async function addImageOnAbstractItem(
   // set real image
   const relativeTargetPath = path.join(relativeTargetDir, originalName);
   const absoluteTargetPath = path.join(absoluteTargetDir, originalName);
-  resizeImage(srcPath, absoluteTargetPath, 600, 1000);
+  const imageMode = await resizeImage(srcPath, absoluteTargetPath, 600, 1000);
   item.image = relativeTargetPath;
 
   // set thumbnail
@@ -161,11 +164,15 @@ async function addImageOnAbstractItem(
   resizeImage(srcPath, absoluteTargetPathThumb, 100, 100);
   item.thumbnail = relativeTargetPathThumb;
 
+  // image_mode
+  if (isImageMode) {
+    item.image_mode = imageMode;
+  }
   // save item
-  item.save();
+  await item.save();
 
   // return
-  return { httpCode: 200, errorMsg: "" };
+  return { item, httpCode: 200, errorMsg: "" };
 }
 
 async function addImageOnStaticItem(srcPath, staticItem, originalName = "") {
@@ -177,6 +184,19 @@ async function addImageOnStaticItem(srcPath, staticItem, originalName = "") {
     100,
     100,
     originalName
+  );
+}
+
+async function addImageOnItem(srcPath, item, originalName = "") {
+  return await addImageOnAbstractItem(
+    srcPath,
+    item,
+    600,
+    1000,
+    100,
+    100,
+    originalName,
+    true
   );
 }
 
@@ -207,4 +227,5 @@ module.exports = {
   deleteFile,
   addImageOnStaticItem,
   removeImageOnItem,
+  addImageOnItem,
 };
