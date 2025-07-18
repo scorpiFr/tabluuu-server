@@ -70,7 +70,12 @@ function csvSection(section) {
 }
 
 function csvItem(item) {
-  const res = `item;"${item.nom}";"${item.description}";${item.prix};${item.position};"${item.image}";${item.image_mode};`;
+  const imagePath =
+    item.image.length > 0
+      ? process.env.UPLOAD_FILE_PATH + "/" + item.image
+      : "";
+
+  const res = `item;"${item.nom}";"${item.description}";${item.prix};${item.position};"${item.imagePath}";${item.image_mode};`;
   return res;
 }
 
