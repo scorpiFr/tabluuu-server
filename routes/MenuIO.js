@@ -75,7 +75,7 @@ function csvItem(item) {
       ? process.env.UPLOAD_FILE_PATH + "/" + item.image
       : "";
 
-  const res = `item;"${item.nom}";"${item.description}";${item.prix};${item.position};"${item.imagePath}";${item.image_mode};`;
+  const res = `item;"${item.nom}";"${item.description}";${item.prix};${item.position};"${imagePath}";${item.image_mode};`;
   return res;
 }
 
